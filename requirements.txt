@@ -10,3 +10,4 @@ python-dotenv~=1.1.0
 alembic~=1.16.2
 starlette~=0.46.2
 python-jose[cryptography]
+uvicorn[standard]

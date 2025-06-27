@@ -1,8 +1,8 @@
-import typing
+import typing as tp
 
 from pydantic import BaseModel
 
 
 class AddToCartSchema(BaseModel):
     variation_id: str
-    quantity: typing.Optional[int]
+    quantity: tp.Optional[int]
