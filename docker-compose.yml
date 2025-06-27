@@ -1,8 +1,18 @@
 services:
+    db:
+        image: postgres:16
+        restart: always
+        env_file:
+            - .env
+        volumes:
+            - pgdata:/var/lib/postgresql/data
+        networks:
+            - kisy-network
     web:
         build:
             context: .
             dockerfile: Dockerfile
+        restart: unless-stopped
         env_file:
             - .env
         volumes:
@@ -11,6 +21,7 @@ services:
             - "8001:8000"
         networks:
             - kisy-network
-        restart: unless-stopped
 networks:
     kisy-network:
+volumes:
+    pgdata:

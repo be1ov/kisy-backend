@@ -8,6 +8,7 @@ from sqlalchemy import pool
 from alembic import context
 
 import main
+from app.core.config import settings
 
 load_dotenv()
 
@@ -18,7 +19,7 @@ if config.config_file_name is not None:
 
 target_metadata = main.Base.metadata
 
-config.set_main_option('sqlalchemy.url', os.getenv('SYNC_DATABASE_URL'))
+config.set_main_option('sqlalchemy.url', settings.sync_database_url)
 
 
 def run_migrations_offline() -> None:
