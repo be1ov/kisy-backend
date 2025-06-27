@@ -17,4 +17,6 @@ jobs:
           key: ${{ secrets.SSH_KEY }}
           script: |
             cd /home/kisy/kisy_backend
+            git stash
+            chmod +x ./deploy.sh
             ./deploy.sh
