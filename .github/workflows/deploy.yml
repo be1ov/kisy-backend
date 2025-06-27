@@ -1,4 +1,5 @@
 name: Deploy at server
+
 on:
   push:
     branches:
@@ -9,6 +10,26 @@ jobs:
   deploy:
     runs-on: ubuntu-latest
     steps:
+      - name: Checkout repo
+        uses: actions/checkout@v3
+
+      - name: Get commit info
+        id: commit
+        run: |
+          echo "message=$(git log -1 --pretty=%s)" >> "$GITHUB_OUTPUT"
+          echo "url=https://github.com/${{ github.repository }}/commit/${{ github.sha }}" >> "$GITHUB_OUTPUT"
+
+      - name: Save start time
+        id: time
+        run: echo "start=$(date +%s)" >> "$GITHUB_OUTPUT"
+
+      - name: Notify start via Telegram
+        run: |
+          curl -s -X POST https://api.telegram.org/bot${{ secrets.TELEGRAM_BOT_TOKEN }}/sendMessage \
+            -d chat_id=${{ secrets.TELEGRAM_CHAT_ID }} \
+            -d text="🚀 *Deploy started!*%0A🖥️ Host: \`${{ secrets.SSH_HOST }}\`%0A👤 Actor: \`${{ github.actor }}\`%0A📦 Repo: \`${{ github.repository }}\`%0A🌿 Branch: \`${{ github.ref_name }}\`%0A🔗 Commit: [${{ steps.commit.outputs.message }}](${{ steps.commit.outputs.url }})" \
+            -d parse_mode=Markdown
+
       - name: Deploy via SSH
         uses: appleboy/ssh-action@master
         with:
@@ -20,3 +41,17 @@ jobs:
             git stash
             chmod +x ./deploy.sh
             ./deploy.sh
+
+      - name: Notify result via Telegram
+        if: always()
+        run: |
+          END_TIME=$(date +%s)
+          START_TIME=${{ steps.time.outputs.start }}
+          DURATION=$((END_TIME - START_TIME))
+
+          STATUS=$([[ "${{ job.status }}" == "success" ]] && echo "✅ *Deploy successful!*" || echo "❌ *Deploy failed!*")
+
+          curl -s -X POST https://api.telegram.org/bot${{ secrets.TELEGRAM_BOT_TOKEN }}/sendMessage \
+            -d chat_id=${{ secrets.TELEGRAM_CHAT_ID }} \
+            -d text="${STATUS}%0A📦 Repo: \`${{ github.repository }}\`%0A🌿 Branch: \`${{ github.ref_name }}\`%0A🔗 Commit: [${{ steps.commit.outputs.message }}](${{ steps.commit.outputs.url }})%0A⏱ Duration: *${DURATION}s*" \
+            -d parse_mode=Markdown
