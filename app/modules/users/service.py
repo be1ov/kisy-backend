@@ -1,10 +1,12 @@
 from fastapi import Depends
-from sqlalchemy import select
+from sqlalchemy import select, update
 from sqlalchemy.ext.asyncio import AsyncSession
+# from sqlalchemy.orm.sync import update
 
 from app.core.db.session import get_session
 from app.modules.auth.schemas.signup import SignupSchema
 from app.modules.users.entities import UserEntity
+from app.modules.users.schema.create import UserUpdateSchema
 
 
 class UserService:
@@ -48,3 +50,15 @@ class UserService:
         self._db.add(user)
         await self._db.commit()
         return user
+
+    async def update_user(self, data: UserUpdateSchema, user: UserEntity):
+        stmt = update(UserEntity).where(UserEntity.id == user.id).values(
+            first_name=data.first_name,
+            last_name=data.last_name,
+            email=data.email,
+            phone=data.phone,
+        )
+        result = await self._db.execute(stmt)
+        await self._db.commit()
+
+        return result.scalars().first()
