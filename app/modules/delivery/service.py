@@ -27,7 +27,7 @@ class DeliveryService:
 
     async def get_addresses(self):
         """
-        Returns list of adresses basing on provided delivery method, country and city
+        Returns list of addresses basing on provided delivery method, country and city
         :return:
         """
         pass
