@@ -12,6 +12,10 @@ class Settings(BaseSettings):
     ACCESS_TOKEN_EXPIRE_MINUTES: int
     SECRET_KEY: str
 
+    CDEK_TEST_API_URL: str
+    CDEK_TEST_ACCOUNT: str
+    CDEK_TEST_SECURE_PASSWORD: str
+
     @property
     def async_database_url(self):
         return f"postgresql+asyncpg://{self.POSTGRES_USER}:{self.POSTGRES_PASSWORD}@{self.POSTGRES_HOST}/{self.POSTGRES_DB}"
