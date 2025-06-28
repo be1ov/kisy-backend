@@ -2,8 +2,7 @@ fastapi
 uvicorn[standard]
 SQLAlchemy~=2.0.41
 asyncpg
-psycopg[binary]
-psycopg2
+psycopg2-binary
 pydantic~=2.11.5
 pydantic-settings~=2.9.1
 bcrypt~=4.3.0
