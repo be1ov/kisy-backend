@@ -1,9 +1,11 @@
-from app.modules.delivery.entities import DeliveryMethods, CDEKDeliveryMethod, BaseDeliveryMethod
+from app.modules.delivery.methods.cdek import CDEKDeliveryMethod
+from app.modules.delivery.methods.base import BaseDeliveryMethod
+from app.modules.delivery.enums.delivery_methods import DeliveryMethods
+from app.modules.delivery.schemas.get_cities import CityFilter, DeliveryPointFilter
+from app.modules.delivery.schemas.get_countries import GetCountriesSchema
 
 
 class DeliveryService:
-    def __init__(self):
-        pass
 
     @staticmethod
     def get_delivery_method(method: DeliveryMethods) -> BaseDeliveryMethod:
@@ -11,23 +13,20 @@ class DeliveryService:
             DeliveryMethods.CDEK: CDEKDeliveryMethod
         }[method]()
 
-    async def get_countries(self):
-        """
-        Returns list of countries basing on provided delivery method
-        :return:
-        """
-        pass
+    @staticmethod
+    def get_all_methods():
+        return [method for method in DeliveryMethods]
 
-    async def get_cities(self):
-        """
-        Returns list of cities basing on provided delivery method and country
-        :return:
-        """
-        pass
+    async def get_cities(self, body: CityFilter):
+        method = self.get_delivery_method(body.method)
+        return await method.get_cities(body)
 
-    async def get_addresses(self):
-        """
-        Returns list of addresses basing on provided delivery method, country and city
-        :return:
-        """
-        pass
+    async def get_countries(self, body: GetCountriesSchema):
+        method = self.get_delivery_method(body.method)
+        return await method.get_countries()
+
+    async def get_addresses(self, body: DeliveryPointFilter):
+        method = self.get_delivery_method(body.method)
+        return await method.get_addresses(body)
+
+

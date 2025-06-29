@@ -20,3 +20,7 @@ class UserEntity(Base):
     telegram_id: Mapped[str] = mapped_column(String, nullable=False, unique=True, default="", server_default="")
 
     signup_completed: Mapped[bool] = mapped_column(Boolean, nullable=False, default=False)
+
+    @property
+    def full_name(self) -> str:
+        return f"{self.first_name} {self.last_name}"
