@@ -1,3 +1,4 @@
+import typing as tp
 import datetime
 import uuid
 from datetime import timezone
@@ -8,9 +9,11 @@ from sqlalchemy.orm import Mapped, mapped_column, relationship
 
 from app.core.db.session import Base
 from app.modules.goods.entities import GoodVariationEntity
-from app.modules.payments.entities import PaymentEntity
 from app.modules.payments.enums.currencies import Currencies
 from app.modules.users.entities import UserEntity
+
+if tp.TYPE_CHECKING:
+    from app.modules.payments.entities import PaymentEntity
 
 
 class OrderEntity(Base):
