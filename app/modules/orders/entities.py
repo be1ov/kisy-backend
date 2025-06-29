@@ -21,7 +21,7 @@ class OrderEntity(Base):
 
     id: Mapped[str] = mapped_column(String, primary_key=True, default=lambda: str(uuid.uuid4()))
     user_id: Mapped[str] = mapped_column(ForeignKey('users.id'), nullable=False)
-    currency: Mapped[Currencies] = mapped_column(Enum(Currencies, name="currencies_enum"), nullable=False, default=Currencies.RUB)
+    currency: Mapped[Currencies] = mapped_column(Enum(Currencies, name="currencies_enum", native_enum=False), nullable=False, default=Currencies.RUB)
 
     user: Mapped["UserEntity"] = relationship()
     created_at: Mapped[DateTime] = mapped_column(DateTime, nullable=False, default=datetime.datetime.now(timezone.utc))
