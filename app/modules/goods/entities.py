@@ -1,10 +1,11 @@
 import uuid
 import datetime
 
-from sqlalchemy import String, ForeignKey, Boolean, Float, DateTime
+from sqlalchemy import String, ForeignKey, Boolean, Float, DateTime, Enum
 from sqlalchemy.orm import Mapped, mapped_column, relationship
 
 from app.core.db.session import Base
+from app.modules.goods.enums.vat_rates import VATRate
 
 
 class GoodEntity(Base):
@@ -13,6 +14,8 @@ class GoodEntity(Base):
     id: Mapped[str] = mapped_column(String, primary_key=True, default=lambda: str(uuid.uuid4()))
     title: Mapped[str] = mapped_column(String)
     description: Mapped[str] = mapped_column(String)
+
+    vat_rate: Mapped[VATRate] = mapped_column(Enum(VATRate), default=VATRate.VAT_20)
 
     variations: Mapped[list["GoodVariationEntity"]] = relationship(
         back_populates="good",
@@ -41,6 +44,14 @@ class GoodVariationEntity(Base):
         back_populates="variation",
         cascade="all, delete-orphan",
     )
+
+    @property
+    def receipt_description(self) -> str:
+        if self.title == self.good.title:
+            return self.title
+
+        return f"{self.good.title} / {self.title}"
+
 
 
 class GoodVariationPhotoEntity(Base):
