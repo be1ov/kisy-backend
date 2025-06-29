@@ -21,8 +21,8 @@ class PaymentEntity(Base):
 
     order_id: Mapped[str] = mapped_column(ForeignKey('orders.id'), nullable=False)
     link: Mapped[str] = mapped_column(String, nullable=True)
-    method: Mapped[PaymentMethods] = mapped_column(Enum(PaymentMethods, name="payment_types_enum"), nullable=False)
-    status: Mapped[str] = mapped_column(Enum(PaymentStatuses, name="payment_types_enum"), nullable=False,
+    method: Mapped[PaymentMethods] = mapped_column(Enum(PaymentMethods, name="payment_types_enum", native_enum=False), nullable=False)
+    status: Mapped[str] = mapped_column(Enum(PaymentStatuses, name="payment_types_enum", native_enum=False), nullable=False,
                                         default=PaymentStatuses.CREATED)
-    
+
     order: Mapped[OrderEntity] = relationship(back_populates="payments")
