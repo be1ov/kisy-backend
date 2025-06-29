@@ -37,7 +37,7 @@ async def telegram_auth(init_data: str, auth_service: AuthService = Depends()):
             }
         }
     except WrongInitData as e:
-        raise HTTPException(status_code=403, detail="Auth failed")
+        raise HTTPException(status_code=403, detail=f"Auth failed: {e}")
 
 
 @router.post('/refresh')
