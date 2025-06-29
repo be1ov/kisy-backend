@@ -47,7 +47,7 @@ class AuthService:
         return dict(parsed_qsl)
 
     @staticmethod
-    async def validate_init_data_hash(parsed: dict, _hash: str):
+    def validate_init_data_hash(parsed: dict, _hash: str):
         data_check_string = "\n".join(
             f"{k}={v}" for k, v in sorted(parsed.items())
         )
