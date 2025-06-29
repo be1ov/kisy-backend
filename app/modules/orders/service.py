@@ -14,6 +14,11 @@ from app.modules.users.entities import UserEntity
 class OrderCreationError(ValueError):
     pass
 
+
+class UndefinedOrder(ValueError):
+    pass
+
+
 class OrderService:
     def __init__(self, db: AsyncSession = Depends(get_session)):
         self.db = db
@@ -28,26 +33,22 @@ class OrderService:
         result = await self.db.execute(stmt)
         found_variations = result.scalars().all()
 
-        # Проверяем, что все варианты найдены
         found_variation_ids = {v.id for v in found_variations}
         for detail in order_data.details:
             if detail.variation_id not in found_variation_ids:
                 raise OrderCreationError("Goods variations not found")
 
-        # Проверяем наличие цен у всех вариантов
         variation_map = {v.id: v for v in found_variations}
         for detail in order_data.details:
             variation = variation_map[detail.variation_id]
             if variation.latest_price is None:
                 raise OrderCreationError(f"Variation {variation.id} has no latest price set")
 
-        # Создаем заказ
         order = OrderEntity(
             user_id=current_user.id,
         )
         self.db.add(order)
 
-        # 7. Создаем детали заказа
         for detail in order_data.details:
             variation = variation_map[detail.variation_id]
             order_detail = OrderDetailsEntity(
@@ -58,7 +59,23 @@ class OrderService:
             )
             self.db.add(order_detail)
 
-
         await self.db.commit()
+
+        return order
+
+    async def get_by_id(self, order_id: str) -> OrderEntity:
+        """
+        Returns order by its id.
+
+        If there is no order with provided id, raises UndefinedOrder
+
+        :param order_id: Order id
+        :return:
+        """
+        stmt = select(OrderEntity).where(OrderEntity.id == order_id)
+        result = await self.db.execute(stmt)
+        order = result.scalars().first()
+        if not order:
+            raise UndefinedOrder("Order not found")
 
         return order
