@@ -13,6 +13,7 @@ from app.modules.goods import router as goods
 from app.modules.prices import router as prices
 from app.modules.cart import router as cart
 from app.modules.orders import router as orders
+from app.modules.delivery import router as delivery
 
 from app.modules.users.entities import UserEntity
 
@@ -38,6 +39,7 @@ app.include_router(goods.router, prefix="/api/v1/goods", tags=["Goods"])
 app.include_router(prices.router, prefix="/api/v1/prices", tags=["Prices"])
 app.include_router(cart.router, prefix="/api/v1/cart", tags=["Cart"])
 app.include_router(orders.router, prefix="/api/v1/orders", tags=["Orders"])
+app.include_router(delivery.router, prefix="/api/v1/delivery", tags=["Delivery"])
 
 
 async def init_db():
