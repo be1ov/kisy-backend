@@ -78,7 +78,7 @@ class AuthService:
             raise WrongInitData("Missing user_data")
 
         try:
-            telegram_id = user_data.get("telegram_id")
+            telegram_id = user_data.get("id")
         except KeyError:
             raise WrongInitData("Missing id")
 
