@@ -82,7 +82,7 @@ class AuthService:
         except KeyError:
             raise WrongInitData("Missing id")
 
-        user = await self.users_service.get_by_id(telegram_id)
+        user = await self.users_service.get_by_telegram_id(telegram_id)
         if not user:
             user = await self.users_service.create_user(telegram_id)
 
