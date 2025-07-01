@@ -28,7 +28,7 @@ class UserService:
         result = await self._db.execute(stmt)
         return result.scalars().all()
 
-    async def create_user(self, telegram_id: str):
+    async def create_user(self, telegram_id: int):
         user = UserEntity(telegram_id=telegram_id)
         self._db.add(user)
         await self._db.commit()
