@@ -17,6 +17,8 @@ class Settings(BaseSettings):
 
     BOT_TOKEN: str
     ACCESS_TOKEN_EXPIRE_MINUTES: int
+    REFRESH_TOKEN_EXPIRE_DAYS: int
+
     SECRET_KEY: str
 
     CDEK_TEST_API_URL: str
