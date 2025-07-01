@@ -52,8 +52,10 @@ class AuthService:
             f"{k}={v}" for k, v in sorted(parsed.items())
         )
 
-        secret_key = hashlib.sha256(settings.BOT_TOKEN.encode()).digest()
-        hmac_hash = hmac.new(secret_key, data_check_string.encode(), hashlib.sha256).hexdigest()
+        secret_key = hmac.new(
+            key=b"WebAppData", msg=settings.BOT_TOKEN.encode(), digestmod=hashlib.sha256
+        )
+        hmac_hash = hmac.new(secret_key.digest(), data_check_string.encode(), hashlib.sha256).hexdigest()
 
         if hmac_hash != _hash:
             return False
