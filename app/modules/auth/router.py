@@ -2,6 +2,7 @@ from fastapi import APIRouter, HTTPException
 from fastapi.params import Depends
 
 from app.core.dependencies.get_current_user import get_current_user
+from app.modules.auth.schemas.telegram import TelegramSchema
 from app.modules.auth.service import AuthService, WrongInitData
 from app.modules.auth.schemas.signup import SignupSchema
 from app.modules.users.entities import UserEntity
@@ -20,9 +21,9 @@ async def signup(data: SignupSchema, users_service: UserService = Depends(),
 
 
 @router.post('/telegram')
-async def telegram_auth(init_data: str, auth_service: AuthService = Depends()):
+async def telegram_auth(body: TelegramSchema, auth_service: AuthService = Depends()):
     try:
-        user = await auth_service.process_init_data(init_data)
+        user = await auth_service.process_init_data(body.init_data)
         if user is None:
             raise HTTPException(status_code=404, detail="Invalid user")
 
