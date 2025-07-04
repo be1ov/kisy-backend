@@ -72,5 +72,6 @@ async def me(user: UserEntity = Depends(get_current_user)):
             "last_name": user.last_name,
             "email": user.email,
             "signup_completed": user.signup_completed,
+            "phone": user.phone
         }
     }
