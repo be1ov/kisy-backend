@@ -21,9 +21,15 @@ class Settings(BaseSettings):
     REFRESH_SECRET_KEY: str
     SECRET_KEY: str
 
+    CDEK_DEBUG: bool
+
     CDEK_TEST_API_URL: str
     CDEK_TEST_ACCOUNT: str
     CDEK_TEST_SECURE_PASSWORD: str
+
+    CDEK_API_URL: str
+    CDEK_ACCOUNT: str
+    CDEK_SECURE_PASSWORD: str
 
     YOOKASSA: YookassaSettings
 
