@@ -53,11 +53,11 @@ class UserService:
         return user
 
     async def update_user(self, data: UserUpdateSchema, user: UserEntity):
-        async with self._db.begin():
+        async with self._db.begin() as conn:
             user.first_name = data.first_name
             user.last_name = data.last_name
             user.email = data.email
             user.phone = data.phone
             self._db.add(user)
-        await self._db.refresh(user)
+            await self._db.refresh(user)
         return user

@@ -9,15 +9,15 @@ from app.modules.users.service import UserService
 
 router = APIRouter()
 
+
 @router.post("/update")
-async def create_user(data: UserUpdateSchema, current_user: UserEntity = Depends(get_current_user), service: UserService = Depends()):
+async def create_user(data: UserUpdateSchema, current_user: UserEntity = Depends(get_current_user),
+                      service: UserService = Depends()):
     try:
         user = await service.update_user(data, current_user)
-        return  {
+        return {
             "status": "success",
             "data": user
         }
     except Exception as e:
         raise HTTPException(e)
-
-
