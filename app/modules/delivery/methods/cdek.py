@@ -30,14 +30,22 @@ class CDEKDeliveryMethod(BaseDeliveryMethod):
         if self.cdek_token_cache:
             return self.cdek_token_cache
 
-        auth_url = f"{settings.CDEK_TEST_API_URL}/oauth/token?grant_type=client_credentials&client_id={settings.CDEK_TEST_ACCOUNT}&client_secret={settings.CDEK_TEST_SECURE_PASSWORD}"
+        if settings.CDEK_DEBUG:
+            base_url = settings.CDEK_TEST_API_URL
+            account = settings.CDEK_TEST_ACCOUNT
+            secret = settings.CDEK_TEST_SECURE_PASSWORD
+        else:
+            base_url = settings.CDEK_TEST_API_URL
+            account = settings.CDEK_TEST_ACCOUNT
+            secret = settings.CDEK_TEST_SECURE_PASSWORD
+
+        auth_url = f"{base_url}/oauth/token?grant_type=client_credentials&client_id={account}&client_secret={secret}"
 
         async with httpx.AsyncClient() as client:
             try:
                 response = await client.post(auth_url)
                 response.raise_for_status()
                 token_data = response.json()
-                print(token_data)
                 cdek_token_cache = token_data["access_token"]
                 self.cdek_token_cache = cdek_token_cache
                 return cdek_token_cache
