@@ -33,13 +33,13 @@ class PaymentService:
         :return:
         """
         return [
-            PaymentMethodEntity(name="ЮКасса", code=PaymentMethods.YOOKASSA)
+            PaymentMethodEntity(name="CloudPayments", code=PaymentMethods.CLOUDPAYMENTS)
         ]
 
     @staticmethod
     def _get_payment_methods() -> tp.Dict[PaymentMethods, tp.Type[BasePaymentMethod]]:
         return {
-            PaymentMethods.YOOKASSA: YookassaPaymentMethod
+            PaymentMethods.CLOUDPAYMENTS: YookassaPaymentMethod
         }
 
     @staticmethod
@@ -86,3 +86,5 @@ class PaymentService:
                 self._db.add(payment)
         except Exception as e:
             raise PaymentLinkGenerationError("There was an error while saving payment link")
+
+        return link
