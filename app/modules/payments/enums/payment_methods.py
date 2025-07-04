@@ -2,4 +2,5 @@ from enum import Enum
 
 
 class PaymentMethods(str, Enum):
-    YOOKASSA = "yookassa"
+    # YOOKASSA = "yookassa"
+    CLOUDPAYMENTS = "cloudpayments"
