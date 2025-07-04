@@ -53,13 +53,11 @@ class UserService:
         return user
 
     async def update_user(self, data: UserUpdateSchema, user: UserEntity):
-        stmt = update(UserEntity).where(UserEntity.id == user.id).values(
-            first_name=data.first_name,
-            last_name=data.last_name,
-            email=data.email,
-            phone=data.phone,
-        )
-        result = await self._db.execute(stmt)
-        await self._db.commit()
-
-        return result.scalars().first()
+        async with self._db.begin():
+            user.first_name = data.first_name
+            user.last_name = data.last_name
+            user.email = data.email
+            user.phone = data.phone
+            self._db.add(user)
+        await self._db.refresh(user)
+        return user
