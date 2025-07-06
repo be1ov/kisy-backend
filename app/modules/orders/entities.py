@@ -11,6 +11,7 @@ from app.core.db.session import Base
 from app.modules.goods.entities import GoodVariationEntity
 from app.modules.payments.enums.currencies import Currencies
 from app.modules.users.entities import UserEntity
+from app.modules.delivery.enums.delivery_methods import DeliveryMethods
 
 if tp.TYPE_CHECKING:
     from app.modules.payments.entities import PaymentEntity
@@ -25,6 +26,8 @@ class OrderEntity(Base):
 
     user: Mapped["UserEntity"] = relationship()
     created_at: Mapped[DateTime] = mapped_column(DateTime, nullable=False, default=datetime.datetime.now(timezone.utc))
+    delivery_point: Mapped[str] = mapped_column(String, nullable=False)
+    delivery_method: Mapped[DeliveryMethods] = mapped_column(Enum(DeliveryMethods, name="delivery-method", native_enum=False))
 
     @property
     def amount(self) -> float:
