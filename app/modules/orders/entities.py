@@ -1,6 +1,7 @@
-import datetime
 import typing as tp
+import datetime
 import uuid
+from datetime import timezone
 from typing import List
 
 from sqlalchemy import String, ForeignKey, DateTime, Integer, Enum
@@ -10,6 +11,7 @@ from app.core.db.session import Base
 from app.modules.goods.entities import GoodVariationEntity
 from app.modules.payments.enums.currencies import Currencies
 from app.modules.users.entities import UserEntity
+from app.modules.delivery.enums.delivery_methods import DeliveryMethods
 
 if tp.TYPE_CHECKING:
     from app.modules.payments.entities import PaymentEntity
@@ -23,6 +25,8 @@ class OrderEntity(Base):
     currency: Mapped[Currencies] = mapped_column(Enum(Currencies, name="currencies_enum", native_enum=False), nullable=False, default=Currencies.RUB)
 
     user: Mapped["UserEntity"] = relationship()
+    delivery_point: Mapped[str] = mapped_column(String, nullable=False)
+    delivery_method: Mapped[DeliveryMethods] = mapped_column(Enum(DeliveryMethods, name="delivery-method", native_enum=False))
     created_at: Mapped[datetime] = mapped_column(DateTime, nullable=False, default=lambda: datetime.datetime.now(datetime.UTC))
 
     @property

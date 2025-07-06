@@ -46,6 +46,8 @@ class OrderService:
 
         order = OrderEntity(
             user_id=current_user.id,
+            delivery_point = order_data.delivery_point,
+            delivery_method = order_data.delivery_method,
         )
         self.db.add(order)
 
