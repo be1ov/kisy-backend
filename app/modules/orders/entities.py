@@ -1,7 +1,6 @@
 import typing as tp
 import datetime
 import uuid
-from datetime import timezone
 from typing import List
 
 from sqlalchemy import String, ForeignKey, DateTime, Integer, Enum
