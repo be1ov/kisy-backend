@@ -1,7 +1,6 @@
 import typing as tp
 import datetime
 import uuid
-from datetime import timezone
 from typing import List
 
 from sqlalchemy import String, ForeignKey, DateTime, Integer, Enum
@@ -25,9 +24,9 @@ class OrderEntity(Base):
     currency: Mapped[Currencies] = mapped_column(Enum(Currencies, name="currencies_enum", native_enum=False), nullable=False, default=Currencies.RUB)
 
     user: Mapped["UserEntity"] = relationship()
-    created_at: Mapped[DateTime] = mapped_column(DateTime, nullable=False, default=datetime.datetime.now(timezone.utc))
     delivery_point: Mapped[str] = mapped_column(String, nullable=False)
     delivery_method: Mapped[DeliveryMethods] = mapped_column(Enum(DeliveryMethods, name="delivery-method", native_enum=False))
+    created_at: Mapped[datetime] = mapped_column(DateTime, nullable=False, default=lambda: datetime.datetime.now(datetime.UTC))
 
     @property
     def amount(self) -> float:
