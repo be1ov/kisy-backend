@@ -26,7 +26,7 @@ class OrderEntity(Base):
     user: Mapped["UserEntity"] = relationship()
     delivery_point: Mapped[str] = mapped_column(String, nullable=False)
     delivery_method: Mapped[DeliveryMethods] = mapped_column(Enum(DeliveryMethods, name="delivery-method", native_enum=False))
-    created_at: Mapped[datetime] = mapped_column(DateTime, nullable=False, default=lambda: datetime.datetime.now(datetime.UTC))
+    created_at: Mapped[datetime] = mapped_column(DateTime(timezone=True), nullable=False, default=lambda: datetime.datetime.now(datetime.UTC))
 
     @property
     def amount(self) -> float:
