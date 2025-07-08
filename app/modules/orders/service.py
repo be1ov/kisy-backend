@@ -3,6 +3,7 @@ import uuid
 from fastapi import Depends
 from sqlalchemy import select
 from sqlalchemy.ext.asyncio import AsyncSession
+from sqlalchemy.orm import selectinload
 
 from app.core.db.session import get_session
 from app.modules.goods.entities import GoodVariationEntity
@@ -75,7 +76,9 @@ class OrderService:
         :param order_id: Order id
         :return:
         """
-        stmt = select(OrderEntity).where(OrderEntity.id == order_id)
+        stmt = select(OrderEntity).options(
+            selectinload(OrderEntity.user)
+        ).where(OrderEntity.id == order_id)
         result = await self.db.execute(stmt)
         order = result.scalars().first()
         if not order:
