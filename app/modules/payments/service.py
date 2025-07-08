@@ -11,6 +11,7 @@ from app.modules.payments.entities import PaymentMethodEntity, PaymentEntity
 from app.modules.payments.enums.payment_methods import PaymentMethods
 from app.modules.payments.enums.payment_statuses import PaymentStatuses
 from app.modules.payments.methods.base import BasePaymentMethod
+from app.modules.payments.methods.cloudpayments import CloudPaymentsPaymentMethod
 from app.modules.payments.methods.yookassa import YookassaPaymentMethod
 from app.modules.payments.schemas.generate_payment_link import GeneratePaymentLinkSchema
 from app.modules.users.entities import UserEntity
@@ -39,7 +40,7 @@ class PaymentService:
     @staticmethod
     def _get_payment_methods() -> tp.Dict[PaymentMethods, tp.Type[BasePaymentMethod]]:
         return {
-            PaymentMethods.CLOUDPAYMENTS: YookassaPaymentMethod
+            PaymentMethods.CLOUDPAYMENTS: CloudPaymentsPaymentMethod
         }
 
     @staticmethod

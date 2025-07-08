@@ -4,5 +4,5 @@ from app.modules.payments.methods.base import BasePaymentMethod
 
 class CloudPaymentsPaymentMethod(BasePaymentMethod):
     async def get_payment_link(self, order: OrderEntity, payment_id: str = None) -> str:
-        return ""
+        return "https://cloudpayments.ru"
 
