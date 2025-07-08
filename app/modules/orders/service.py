@@ -62,6 +62,7 @@ class OrderService:
             self.db.add(order_detail)
 
         await self.db.commit()
+        await self.db.refresh(order)
 
         return order
 
