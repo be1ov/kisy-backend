@@ -63,7 +63,7 @@ class PaymentService:
         except UndefinedOrder:
             raise PaymentLinkGenerationError("Undefined order")
 
-        if order.user != current_user:
+        if order.user_id != current_user.id:
             raise PaymentLinkGenerationError("Only owner of the order can generate payment link")
 
         if any(payment.status == PaymentStatuses.SUCCESS for payment in order.payments):
