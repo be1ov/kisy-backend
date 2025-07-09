@@ -32,6 +32,7 @@ class UserService:
         user = UserEntity(telegram_id=telegram_id)
         self._db.add(user)
         await self._db.commit()
+        await self._db.refresh(user)
         return user
 
     async def save(self, user: UserEntity) -> UserEntity:
