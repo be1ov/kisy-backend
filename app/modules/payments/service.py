@@ -48,7 +48,7 @@ class PaymentService:
         return PaymentService._get_payment_methods()[method]()
 
     async def generate_payment_link(self, data: GeneratePaymentLinkSchema,
-                                    current_user: UserEntity = Depends(get_current_user)) -> str:
+                                    current_user: UserEntity) -> str:
         """
         Generates payment link for order
 
