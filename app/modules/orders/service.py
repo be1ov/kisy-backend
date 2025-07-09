@@ -4,6 +4,7 @@ from fastapi import Depends
 from sqlalchemy import select
 from sqlalchemy.ext.asyncio import AsyncSession
 from sqlalchemy.orm import selectinload
+from sqlalchemy.testing.pickleable import Order
 
 from app.core.db.session import get_session
 from app.modules.goods.entities import GoodVariationEntity
@@ -77,7 +78,8 @@ class OrderService:
         :return:
         """
         stmt = select(OrderEntity).options(
-            selectinload(OrderEntity.user)
+            selectinload(OrderEntity.user),
+            selectinload(OrderEntity.payments)
         ).where(OrderEntity.id == order_id)
         result = await self.db.execute(stmt)
         order = result.scalars().first()
