@@ -73,8 +73,8 @@ class PaymentService:
 
         try:
             link = await method.get_payment_link(order, payment_id)
-        except:
-            raise PaymentLinkGenerationError("There was an error generating payment link")
+        except Exception as e:
+            raise PaymentLinkGenerationError(f"There was an error generating payment link: {e}")
 
         try:
             payment = PaymentEntity(
@@ -86,6 +86,6 @@ class PaymentService:
             self._db.add(payment)
             await self._db.commit()
         except Exception as e:
-            raise PaymentLinkGenerationError("There was an error while saving payment link")
+            raise PaymentLinkGenerationError(f"There was an error while saving payment link: {e}")
 
         return link
