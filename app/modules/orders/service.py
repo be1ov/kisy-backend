@@ -79,7 +79,8 @@ class OrderService:
         """
         stmt = select(OrderEntity).options(
             selectinload(OrderEntity.user),
-            selectinload(OrderEntity.payments)
+            selectinload(OrderEntity.payments),
+            selectinload(OrderEntity.details).selectinload(OrderDetailsEntity.variation)
         ).where(OrderEntity.id == order_id)
         result = await self.db.execute(stmt)
         order = result.scalars().first()

@@ -1,6 +1,7 @@
 from fastapi import APIRouter, Depends
 
 from app.core.dependencies.get_current_user import get_current_user
+from app.modules.orders.entities import OrderEntity
 from app.modules.payments.schemas.generate_payment_link import GeneratePaymentLinkSchema
 from app.modules.payments.service import PaymentService, PaymentLinkGenerationError
 from app.modules.users.entities import UserEntity

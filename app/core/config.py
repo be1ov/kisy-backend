@@ -6,6 +6,10 @@ class YookassaSettings(BaseSettings):
     SECRET_KEY: str
     RETURN_URL: str
 
+class CloudPaymentSettings(BaseSettings):
+    PUBLIC_ID: str
+    API_SECRET: str
+
 
 class Settings(BaseSettings):
     POSTGRES_HOST: str
@@ -32,6 +36,7 @@ class Settings(BaseSettings):
     CDEK_SECURE_PASSWORD: str
 
     YOOKASSA: YookassaSettings
+    CLOUDPAYMENTS: CloudPaymentSettings
 
     @property
     def async_database_url(self):
