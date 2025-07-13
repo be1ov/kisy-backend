@@ -66,11 +66,9 @@ class CDEKDeliveryMethod(BaseDeliveryMethod):
         """
         token = await self.get_cdek_auth_token()
         headers = {"Authorization": f"Bearer {token}"}
-        print(headers)
         params = {
             "country_codes": filters.country_code,
         }
-        print(params)
 
         async with httpx.AsyncClient() as client:
             try:
@@ -81,7 +79,6 @@ class CDEKDeliveryMethod(BaseDeliveryMethod):
                 )
                 response.raise_for_status()
                 cities = response.json()
-                print(cities)
                 return ListResponse[CityResponse](data=cities, count=len(cities))
             except httpx.HTTPStatusError as e:
                 raise CDEKError(
