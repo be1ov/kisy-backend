@@ -36,7 +36,7 @@ class CloudPaymentsPaymentMethod(BasePaymentMethod):
             }
         }
 
-        auth = (settings.CLOUDPAYMENTS.CLOUDPAYMENTS_PUBLIC_ID, settings.CLOUDPAYMENTS.CLOUDPAYMENTS_API_SECRET)
+        auth = (settings.CLOUDPAYMENTS.PUBLIC_ID, settings.CLOUDPAYMENTS.API_SECRET)
 
         async with httpx.AsyncClient() as client:
             try:
