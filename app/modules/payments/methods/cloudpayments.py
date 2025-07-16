@@ -1,5 +1,6 @@
 import uuid
 import httpx
+import typing as tp
 
 from app.core.config import settings
 from app.modules.orders.entities import OrderEntity
@@ -9,21 +10,25 @@ from app.modules.payments.methods.base import BasePaymentMethod
 class LinkException(ValueError):
     pass
 
+
 class CloudPaymentsPaymentMethod(BasePaymentMethod):
+    async def process_payment(self, body: tp.Any) -> str:
+        return body["InvoiceId"]
+
     async def get_payment_link(self, order: OrderEntity, payment_id: str = None) -> str:
 
         payload = {
             "Amount": order.amount,
             "Currency": order.currency,
             "Description": order.description,
-            "InvoiceId": order.id,
+            "InvoiceId": payment_id,
             "AccountId": order.user_id,
             "SendEmail": True,
-            "JsonData":{
+            "JsonData": {
                 "PaymentId": payment_id,
-                "cloudpayments":{
-                    "receipt":{
-                        "items":[
+                "cloudpayments": {
+                    "receipt": {
+                        "items": [
                             {
                                 "product": item.variation.title,
                                 "quantity": item.quantity,
@@ -56,6 +61,3 @@ class CloudPaymentsPaymentMethod(BasePaymentMethod):
 
             except Exception as e:
                 raise LinkException(f"Internal server error: {str(e)}")
-
-
-
