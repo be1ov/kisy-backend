@@ -39,6 +39,11 @@ class GoodVariationEntity(Base):
     latest_price: Mapped[float] = mapped_column(Float, nullable=True, default=None)
     latest_price_date: Mapped[datetime] = mapped_column(DateTime, nullable=True, default=None)
 
+    weight: Mapped[float] = mapped_column(Float, nullable=True, default=0)
+    length: Mapped[float] = mapped_column(Float, nullable=True, default=0)
+    width: Mapped[float] = mapped_column(Float, nullable=True, default=0)
+    height: Mapped[float] = mapped_column(Float, nullable=True, default=0)
+
     good: Mapped["GoodEntity"] = relationship(back_populates="variations")
     photos: Mapped[list["GoodVariationPhotoEntity"]] = relationship(
         back_populates="variation",
