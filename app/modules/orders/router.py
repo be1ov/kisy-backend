@@ -11,10 +11,11 @@ router = APIRouter()
 @router.post("/create")
 async def create_goods(goods: CreateOrderSchema, current_user: UserEntity = Depends(get_current_user), service: OrderService = Depends()):
     try:
-        order = await service.create_order(goods, current_user)
+        order_data = await service.create_order(goods, current_user)
         return {
             "status": "success",
-            "order": order
+            "order": order_data["order"],
+            "cdek_data": order_data["cdek_data"],
         }
     except OrderCreationError as e:
         raise HTTPException(status_code=403, detail=str(e))

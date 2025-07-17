@@ -44,7 +44,7 @@ class PaymentService:
         }
 
     @staticmethod
-    def _get_payment_method(method: PaymentMethods) -> BasePaymentMethod:
+    def get_payment_method(method: PaymentMethods) -> BasePaymentMethod:
         return PaymentService._get_payment_methods()[method]()
 
     async def generate_payment_link(self, data: GeneratePaymentLinkSchema,
@@ -56,7 +56,7 @@ class PaymentService:
         :param current_user:
         :return:
         """
-        method = self._get_payment_method(data.method)
+        method = self.get_payment_method(data.method)
 
         try:
             order = await self._orders_service.get_by_id(data.order_id)

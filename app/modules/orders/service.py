@@ -1,12 +1,16 @@
 import uuid
+import typing as tp
 
+import httpx
 from fastapi import Depends
 from sqlalchemy import select
 from sqlalchemy.ext.asyncio import AsyncSession
 from sqlalchemy.orm import selectinload
 from sqlalchemy.testing.pickleable import Order
 
+from app.core.config import settings
 from app.core.db.session import get_session
+from app.modules.delivery.service import DeliveryService
 from app.modules.goods.entities import GoodVariationEntity
 from app.modules.orders.entities import OrderEntity, OrderDetailsEntity
 from app.modules.orders.schemas.create import CreateOrderSchema
@@ -22,8 +26,10 @@ class UndefinedOrder(ValueError):
 
 
 class OrderService:
-    def __init__(self, db: AsyncSession = Depends(get_session)):
+    def __init__(self, db: AsyncSession = Depends(get_session), delivery_service: DeliveryService = Depends()):
         self.db = db
+        self.delivery_service = delivery_service
+
 
     async def create_order(self, order_data: CreateOrderSchema, current_user: UserEntity):
 
@@ -66,7 +72,13 @@ class OrderService:
         await self.db.commit()
         await self.db.refresh(order)
 
-        return order
+        cdek_data = await self.delivery_service.prepare_cdek_data(order_data, variation_map, order.id, current_user)
+
+        result = {
+            "order": order,
+            "cdek_data": cdek_data,
+        }
+        return result
 
     async def get_by_id(self, order_id: str) -> OrderEntity:
         """
