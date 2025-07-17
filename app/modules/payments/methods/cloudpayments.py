@@ -18,7 +18,7 @@ class CloudPaymentsPaymentMethod(BasePaymentMethod):
     async def get_payment_link(self, order: OrderEntity, payment_id: str = None) -> str:
 
         payload = {
-            "Amount": order.amount,
+            "Amount": order.amount + 350,
             "Currency": order.currency,
             "Description": order.description,
             "InvoiceId": payment_id,
