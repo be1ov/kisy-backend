@@ -134,7 +134,6 @@ class CDEKDeliveryMethod(BaseDeliveryMethod):
 
                 pvz = data[0]
 
-                # Форматируем данные в единый словарь
                 return {
                     "code": code,
                     "city": pvz.get("location", {}).get("city"),
@@ -142,10 +141,6 @@ class CDEKDeliveryMethod(BaseDeliveryMethod):
                 }
             except (httpx.HTTPStatusError, KeyError) as e:
                 raise CDEKError(f"Ошибка получения ПВЗ СДЕК: {str(e)}")
-
-    def __init__(self):
-        self.cdek_token_cache = None
-        pass
 
     @staticmethod
     def _get_countries():
@@ -156,10 +151,6 @@ class CDEKDeliveryMethod(BaseDeliveryMethod):
         }
 
     async def get_cdek_auth_token(self):
-
-        if self.cdek_token_cache:
-            return self.cdek_token_cache
-
         if settings.CDEK_DEBUG:
             base_url = settings.CDEK_TEST_API_URL
             account = settings.CDEK_TEST_ACCOUNT
@@ -176,9 +167,6 @@ class CDEKDeliveryMethod(BaseDeliveryMethod):
                 response = await client.post(auth_url)
                 response.raise_for_status()
                 token_data = response.json()
-                cdek_token_cache = token_data["access_token"]
-                self.cdek_token_cache = cdek_token_cache
-                return cdek_token_cache
             except (httpx.HTTPStatusError, KeyError) as e:
                 raise CDEKError(f"Ошибка авторизации в CDEK API: {str(e)}")
 
