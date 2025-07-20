@@ -41,13 +41,11 @@ class OrderService:
         result = await self.db.execute(stmt)
         found_variations = result.scalars().all()
 
-        found_variation_ids = {v.id for v in found_variations}
-        for detail in order_data.details:
-            if detail.variation_id not in found_variation_ids:
-                raise OrderCreationError("Goods variations not found")
-
         variation_map = {v.id: v for v in found_variations}
         for detail in order_data.details:
+            if variation_map.get(detail.variation_id, None) is None:
+                raise OrderCreationError("Goods variations not found")
+
             variation = variation_map[detail.variation_id]
             if variation.latest_price is None:
                 raise OrderCreationError(f"Variation {variation.id} has no latest price set")
@@ -69,10 +67,10 @@ class OrderService:
             )
             self.db.add(order_detail)
 
+        cdek_data = await self.delivery_service.prepare_cdek_data(order_data, variation_map, order.id, current_user)
+
         await self.db.commit()
         await self.db.refresh(order)
-
-        cdek_data = await self.delivery_service.prepare_cdek_data(order_data, variation_map, order.id, current_user)
 
         result = {
             "order": order,
