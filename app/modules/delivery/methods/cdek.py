@@ -19,7 +19,8 @@ class CDEKError(ValueError):
 
 
 class CDEKDeliveryMethod(BaseDeliveryMethod):
-    async def prepare_cdek_data(self, order_data: CreateOrderSchema, variations: tp.Dict[str, GoodVariationEntity],
+    # noinspection PyUnresolvedReferences
+    async def prepare_cdek_data(self, order_data: CreateOrderSchema, variations: tp.Dict[str, tp.Any],
                                 order_id: str, current_user: UserEntity):
         package_items = []
         total_weight = 0
@@ -31,18 +32,18 @@ class CDEKDeliveryMethod(BaseDeliveryMethod):
                 raise CDEKError('Unknown variation id')
 
             item = CdekPackageItem(
-                ware_key=str(variation.id),
-                name=variation.title,
-                cost=variation.latest_price,
-                weight=variation.weight,
+                ware_key=str(variation["id"]),
+                name=variation["title"],
+                cost=variation["latest_price"],
+                weight=variation["weight"],
                 amount=order_detail.quantity,
                 payment={
-                    "value": variation.latest_price * order_detail.quantity,
+                    "value": variation["latest_price"] * order_detail.quantity,
                     "type": "CARD"
                 }
             )
             package_items.append(item)
-            total_weight += int(variation.weight * 1000 * order_detail.quantity)
+            total_weight += int(variation["weight"] * 1000 * order_detail.quantity)
 
         # Формируем посылку
         package = CdekPackage(
@@ -143,9 +144,6 @@ class CDEKDeliveryMethod(BaseDeliveryMethod):
             except (httpx.HTTPStatusError, KeyError) as e:
                 raise CDEKError(f"Ошибка получения ПВЗ СДЕК: {str(e)}")
 
-
-
-
     def __init__(self):
         self.cdek_token_cache = None
         pass
@@ -243,4 +241,3 @@ class CDEKDeliveryMethod(BaseDeliveryMethod):
                 raise CDEKError(
                     f"CDEK API error: {str(e)}"
                 )
-
