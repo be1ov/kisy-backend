@@ -76,8 +76,7 @@ class CDEKDeliveryMethod(BaseDeliveryMethod):
                 "address": delivery_point['address']
             },
             "packages": [package.model_dump()],
-            "recipient": recipient.model_dump(),
-            "delivery_recipient_cost": 350
+            "recipient": recipient.model_dump()
         }
 
         print(body)
