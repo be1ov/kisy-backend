@@ -138,7 +138,7 @@ class CDEKDeliveryMethod(BaseDeliveryMethod):
                 pvz = data[0]
 
                 return {
-                    "code": code,
+                    "code": pvz.get("location", {}).get("city_code"),
                     "city": pvz.get("location", {}).get("city"),
                     "address": pvz.get("location", {}).get("address_full")
                 }
