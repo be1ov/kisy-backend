@@ -108,6 +108,7 @@ class CDEKDeliveryMethod(BaseDeliveryMethod):
     async def get_delivery_point(self, code: str):
 
         token = await self.get_cdek_auth_token()
+        print(token)
 
         if settings.CDEK_DEBUG:
             base_url = settings.CDEK_TEST_API_URL
