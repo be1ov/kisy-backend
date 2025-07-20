@@ -67,6 +67,8 @@ class OrderService:
             )
             self.db.add(order_detail)
 
+        await self.db.flush()
+
         cdek_data = await self.delivery_service.prepare_cdek_data(order_data, variation_map, order.id, current_user)
 
         await self.db.commit()

@@ -26,7 +26,9 @@ class CDEKDeliveryMethod(BaseDeliveryMethod):
 
         for order_detail in order_data.details:
             variation_id = order_detail.variation_id
-            variation = variations.get(variation_id)
+            variation = variations.get(variation_id, None)
+            if variation is None:
+                raise CDEKError('Unknown variation id')
 
             item = CdekPackageItem(
                 ware_key=str(variation.id),
