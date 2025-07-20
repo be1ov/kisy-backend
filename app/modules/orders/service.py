@@ -48,7 +48,7 @@ class OrderService:
 
             variation = variation_map[detail.variation_id]
             if variation["latest_price"] is None:
-                raise OrderCreationError(f"Variation {variation["id"]} has no latest price set")
+                raise OrderCreationError(f"Variation {variation['id']} has no latest price set")
 
         order = OrderEntity(
             user_id=current_user.id,

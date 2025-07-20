@@ -25,6 +25,6 @@ class BaseDeliveryMethod:
         pass
 
     @abc.abstractmethod
-    async def prepare_cdek_data(self, order_data: CreateOrderSchema, variations: tp.Dict[str, GoodVariationEntity], order_id: str, current_user: UserEntity):
+    async def prepare_cdek_data(self, order_data: CreateOrderSchema, variations: tp.Dict[str, tp.Dict], order_id: str, current_user: UserEntity):
         pass
 

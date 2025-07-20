@@ -39,7 +39,7 @@ class DeliveryService:
         method = self.get_delivery_method(method)
         return await method.get_delivery_point(code)
 
-    async def prepare_cdek_data(self, order_data: CreateOrderSchema, variations: tp.Dict, order_id: str, current_user: UserEntity):
+    async def prepare_cdek_data(self, order_data: CreateOrderSchema, variations: tp.Dict[str, tp.Dict], order_id: str, current_user: UserEntity):
         method = self.get_delivery_method(order_data.delivery_method)
         return await method.prepare_cdek_data(order_data, variations, order_id, current_user)
 
