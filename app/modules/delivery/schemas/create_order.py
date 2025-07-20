@@ -8,15 +8,15 @@ class CdekPackageItem(BaseModel):
     name: str
     cost: float
     weight: float
-    amount: float
+    amount: int
     payment: dict
 
 class CdekPackage(BaseModel):
     number: str
-    weight: float
-    length: float
-    width: float
-    height: float
+    weight: int
+    length: int
+    width: int
+    height: int
     items: tp.List[CdekPackageItem]
 
 class CdekRecipient(BaseModel):
