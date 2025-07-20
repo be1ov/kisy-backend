@@ -168,7 +168,7 @@ class CDEKDeliveryMethod(BaseDeliveryMethod):
         else:
             base_url = settings.CDEK_API_URL
             account = settings.CDEK_ACCOUNT
-            secret = settings.CDEK_SECRET
+            secret = settings.CDEK_SECURE_PASSWORD
 
         auth_url = f"{base_url}/oauth/token?grant_type=client_credentials&client_id={account}&client_secret={secret}"
 
