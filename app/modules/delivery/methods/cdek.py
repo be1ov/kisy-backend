@@ -80,6 +80,8 @@ class CDEKDeliveryMethod(BaseDeliveryMethod):
             "delivery_recipient_cost": 350
         }
 
+        print(body)
+
         if settings.CDEK_DEBUG:
             base_url = settings.CDEK_TEST_API_URL
         else:
@@ -96,10 +98,10 @@ class CDEKDeliveryMethod(BaseDeliveryMethod):
                         "Accept": "application/json"
                     },
                     json=body
-
                 )
                 response.raise_for_status()
                 data = response.json()
+                print(data)
                 return data
 
             except (httpx.HTTPStatusError, KeyError) as e:
