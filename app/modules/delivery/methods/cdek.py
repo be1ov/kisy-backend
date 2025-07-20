@@ -48,9 +48,9 @@ class CDEKDeliveryMethod(BaseDeliveryMethod):
         package = CdekPackage(
             number=f"PKG_{order_id}",
             weight=total_weight,
-            length=0,
-            width=0,
-            height=0,
+            length=1,
+            width=1,
+            height=1,
             items=package_items
         )
 
