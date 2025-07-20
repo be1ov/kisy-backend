@@ -35,7 +35,7 @@ class CDEKDeliveryMethod(BaseDeliveryMethod):
                 name=variation["title"],
                 cost=variation["latest_price"],
                 weight=variation["weight"],
-                amount=order_detail.quantity,
+                amount=int(order_detail.quantity),
                 payment={
                     "value": variation["latest_price"] * order_detail.quantity,
                     "type": "CARD"
