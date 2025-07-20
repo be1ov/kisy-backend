@@ -19,8 +19,7 @@ class CDEKError(ValueError):
 
 
 class CDEKDeliveryMethod(BaseDeliveryMethod):
-    # noinspection PyUnresolvedReferences
-    async def prepare_cdek_data(self, order_data: CreateOrderSchema, variations: tp.Dict[str, tp.Any],
+    async def prepare_cdek_data(self, order_data: CreateOrderSchema, variations: tp.Dict[str, tp.Dict],
                                 order_id: str, current_user: UserEntity):
         package_items = []
         total_weight = 0
