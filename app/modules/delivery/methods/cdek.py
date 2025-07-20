@@ -170,6 +170,8 @@ class CDEKDeliveryMethod(BaseDeliveryMethod):
             except (httpx.HTTPStatusError, KeyError) as e:
                 raise CDEKError(f"Ошибка авторизации в CDEK API: {str(e)}")
 
+        return token_data['access_token']
+
     async def get_countries(self):
         """
         Returns list of countries
