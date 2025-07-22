@@ -1,4 +1,5 @@
 services:
+    
     db:
         image: postgres:16
         restart: always
@@ -21,6 +22,19 @@ services:
             - "8001:8000"
         networks:
             - kisy-network
+    minio:
+        image: minio/minio:latest
+        container_name: minio
+        ports:
+            - "9000:9000"
+            - "9001:9001"
+        env_file:
+            - .env
+        volumes:
+            - minio_data:/data
+        networks:
+            - kisy-network
+        command: server /data --console-address ":9001"
 networks:
     kisy-network:
 volumes:
