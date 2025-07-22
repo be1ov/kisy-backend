@@ -39,3 +39,4 @@ networks:
     kisy-network:
 volumes:
     pgdata:
+    minio_data:
