@@ -14,3 +14,4 @@ starlette~=0.46.2
 python-jose[cryptography]
 httpx
 yookassa
+openpyxl>=3.0.0
