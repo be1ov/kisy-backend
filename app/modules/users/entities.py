@@ -1,7 +1,7 @@
 import uuid
 from datetime import datetime
 
-from sqlalchemy import String, DateTime, Boolean, Integer
+from sqlalchemy import String, DateTime, Boolean, Integer, BigInteger
 from sqlalchemy.orm import mapped_column, Mapped
 
 from app.core.db.session import Base
@@ -17,7 +17,7 @@ class UserEntity(Base):
     last_name: Mapped[str] = mapped_column(String, nullable=True)
     birth_date: Mapped[datetime | None] = mapped_column(DateTime, nullable=True)
 
-    telegram_id: Mapped[int] = mapped_column(Integer, nullable=False, unique=True, default="", server_default="")
+    telegram_id: Mapped[int] = mapped_column(BigInteger, nullable=False, unique=True, default="", server_default="")
 
     signup_completed: Mapped[bool] = mapped_column(Boolean, nullable=False, default=False)
 
