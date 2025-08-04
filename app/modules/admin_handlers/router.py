@@ -1,6 +1,7 @@
 from datetime import datetime
+from typing import Annotated, Optional
 
-from fastapi import APIRouter, Depends, HTTPException
+from fastapi import APIRouter, Depends, HTTPException, Body, Query
 from fastapi.responses import StreamingResponse
 
 from app.modules.admin_handlers.service import ExcelService
@@ -8,8 +9,8 @@ from app.modules.admin_handlers.service import ExcelService
 router = APIRouter()
 
 @router.get("/get_excel_orders")
-async def get_excel_orders(start_date: datetime,
-    end_date: datetime,
+async def get_excel_orders(start_date: Optional[datetime] = Query(None, description="Start date in YYYY-MM-DD format"),
+    end_date: Optional[datetime] = Query(None, description="End date in YYYY-MM-DD format"),
     service:ExcelService = Depends()):
 
     try:
