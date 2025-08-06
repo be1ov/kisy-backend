@@ -1,0 +1,159 @@
+<!DOCTYPE html>
+<html lang="ru">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Рассылка фото в Telegram</title>
+    <style>
+        body {
+            font-family: Arial, sans-serif;
+            max-width: 600px;
+            margin: 0 auto;
+            padding: 20px;
+            background-color: #f5f5f5;
+        }
+
+        .form-container {
+            background: white;
+            padding: 20px;
+            border-radius: 8px;
+            box-shadow: 0 2px 10px rgba(0, 0, 0, 0.1);
+        }
+
+        h1 {
+            color: #333;
+            text-align: center;
+        }
+
+        .form-group {
+            margin-bottom: 15px;
+        }
+
+        label {
+            display: block;
+            margin-bottom: 5px;
+            font-weight: bold;
+        }
+
+        input[type="file"], textarea {
+            width: 100%;
+            padding: 8px;
+            border: 1px solid #ddd;
+            border-radius: 4px;
+            box-sizing: border-box;
+        }
+
+        textarea {
+            height: 100px;
+            resize: vertical;
+        }
+
+        button {
+            background-color: #4CAF50;
+            color: white;
+            border: none;
+            padding: 10px 15px;
+            border-radius: 4px;
+            cursor: pointer;
+            font-size: 16px;
+            width: 100%;
+        }
+
+        button:hover {
+            background-color: #45a049;
+        }
+
+        #preview {
+            max-width: 100%;
+            margin-top: 10px;
+            display: none;
+        }
+
+        #status {
+            margin-top: 15px;
+            padding: 10px;
+            border-radius: 4px;
+            display: none;
+        }
+
+        .success {
+            background-color: #dff0d8;
+            color: #3c763d;
+        }
+
+        .error {
+            background-color: #f2dede;
+            color: #a94442;
+        }
+    </style>
+</head>
+<body>
+<div class="form-container">
+    <h1>Отправить рассылку в Telegram</h1>
+    <form id="broadcastForm">
+        <div class="form-group">
+            <label for="photo">Выберите фото:</label>
+            <input type="file" id="photo" name="photo" accept="image/*" required>
+            <img id="preview" src="#" alt="Предпросмотр">
+        </div>
+
+        <div class="form-group">
+            <label for="caption">Текст сообщения:</label>
+            <textarea id="caption" name="caption" placeholder="Введите текст для рассылки..." required></textarea>
+        </div>
+
+        <button type="submit">Отправить рассылку</button>
+    </form>
+
+    <div id="status"></div>
+</div>
+
+<script>
+    // Превью выбранного изображения
+    document.getElementById('photo').addEventListener('change', function (e) {
+        const file = e.target.files[0];
+        if (file) {
+            const reader = new FileReader();
+            reader.onload = function (event) {
+                const preview = document.getElementById('preview');
+                preview.src = event.target.result;
+                preview.style.display = 'block';
+            }
+            reader.readAsDataURL(file);
+        }
+    });
+
+    // Отправка формы
+    document.getElementById('broadcastForm').addEventListener('submit', async function (e) {
+        e.preventDefault();
+
+        const form = e.target;
+        const formData = new FormData(form);
+        const statusDiv = document.getElementById('status');
+
+        try {
+            const response = await fetch('/api/v1/admin_routers/send_messages', {
+                method: 'POST',
+                body: formData
+            });
+
+            const result = await response.json();
+
+            if (response.ok) {
+                statusDiv.textContent = 'Рассылка успешно запущена!';
+                statusDiv.className = 'success';
+                form.reset();
+                document.getElementById('preview').style.display = 'none';
+            } else {
+                throw new Error(result.detail || 'Ошибка при отправке');
+            }
+        } catch (error) {
+            statusDiv.textContent = `Ошибка: ${error.message}`;
+            statusDiv.className = 'error';
+        }
+
+        statusDiv.style.display = 'block';
+    });
+</script>
+</body>
+</html>

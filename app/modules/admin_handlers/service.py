@@ -1,3 +1,4 @@
+import os
 from datetime import datetime
 from io import BytesIO
 
@@ -9,10 +10,68 @@ from openpyxl.styles import Font
 
 from typing import AsyncIterator
 
+from starlette.datastructures import UploadFile
+
+from app.core.config import settings
 from app.core.db.session import get_session
 from app.modules.goods.entities import GoodEntity, GoodVariationEntity
 from app.modules.orders.entities import OrderEntity, OrderDetailsEntity
 from app.modules.users.entities import UserEntity
+
+from aiogram import Bot
+
+bot = Bot(token=settings.BOT_TOKEN)
+
+class InvalidUsers(ValueError):
+    pass
+
+class SendingMessages:
+    def __init__(self, db: AsyncSession = Depends(get_session)):
+        self.db = db
+
+    async def send_message(self, photo: str, message: str):
+
+        result = await self.db.execute(select(UserEntity).where(UserEntity.phone == '+79319693552'))
+        users = result.scalars().all()
+
+        if not users:
+            return InvalidUsers("No users with telegram_id found")
+
+        success_count = 0
+        failed_users = []
+
+        for user in users:
+            try:
+                print(photo)
+                print(message)
+                await bot.send_photo(
+                    chat_id=user.telegram_id,
+                    photo=photo,
+                    caption=message
+                )
+                success_count += 1
+            except Exception as e:
+                failed_users.append(user.telegram_id)
+
+        return {
+            "status": "completed",
+            "total_users": len(users),
+            "success_count": success_count,
+            "failed_count": len(failed_users),
+            "failed_users": failed_users
+        }
+
+    async def save_uploaded_file(self, file: UploadFile) -> str:
+
+        os.makedirs("media/uploads", exist_ok=True)
+
+        file_name = f"uploaded_{file.filename}"
+        file_path = f"media/uploads/{file_name}"
+
+        with open(file_path, "wb") as buffer:
+            buffer.write(await file.read())
+
+        return f"https://kisy-cosmetic.ru/media/uploads/{file_name}"
 
 
 class ExcelService:

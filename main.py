@@ -1,5 +1,5 @@
 from fastapi import FastAPI
-from sqladmin import Admin, ModelView
+from sqladmin import Admin, ModelView, expose, BaseView
 
 from app.core.db.session import Base, engine
 from app.modules.cart.entities import GoodsInCart
@@ -67,7 +67,6 @@ admin.title = "KISY Shop Admin"
 class UserAdmin(ModelView, model=UserEntity):
     name_plural = "Пользователи"
 
-
 class GoodsAdmin(ModelView, model=GoodEntity):
     name_plural = "Товары"
 
@@ -83,9 +82,38 @@ class GoodVariationPhotoEntityAdmin(ModelView, model=GoodVariationPhotoEntity):
 class GoodVariationPriceEntityAdmin(ModelView, model=GoodVariationPriceEntity):
     name_plural = "Установка цен"
 
+class ExportView(BaseView):
+    name = "Экспорт заказов"
+    icon = "fa-solid fa-file-excel"
+
+    @expose("/export-admin", methods=["GET"])
+    async def export_page(self, request):
+        return await self.templates.TemplateResponse(
+            request=request,
+            name="export1.html"
+            # context={"title": "Экспорт в Excel"}
+        )
+
+class MessageView(BaseView):
+    name = "Рассылка сообщений"
+    icon = "fa-solid fa-file-excel"
+
+    @expose("/messages", methods=["GET"])
+    async def messages(self, request):
+        return await self.templates.TemplateResponse(
+            request=request,
+            name="message.html"
+            # context={"title": "Экспорт в Excel"}
+        )
+
+
 
 admin.add_view(UserAdmin)
 admin.add_view(GoodsAdmin)
 admin.add_view(GoodsVariationAdmin)
 admin.add_view(GoodVariationPhotoEntityAdmin)
 admin.add_view(GoodVariationPriceEntityAdmin)
+admin.add_view(ExportView)
+admin.add_view(MessageView)
+
+# admin.add_view(OrdersExcelAdmin)
