@@ -35,6 +35,8 @@ class Settings(BaseSettings):
     CDEK_ACCOUNT: str
     CDEK_SECURE_PASSWORD: str
 
+    TEMPLATES: str
+
     YOOKASSA: YookassaSettings
     CLOUDPAYMENTS: CloudPaymentSettings
 

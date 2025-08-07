@@ -21,6 +21,8 @@ class UserEntity(Base):
 
     signup_completed: Mapped[bool] = mapped_column(Boolean, nullable=False, default=False)
 
+    is_admin : Mapped[bool] = mapped_column(Boolean, nullable=True, default=False)
+
     @property
     def full_name(self) -> str:
         return f"{self.first_name} {self.last_name}"

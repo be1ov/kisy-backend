@@ -1,7 +1,12 @@
 from fastapi import FastAPI
+from fastapi_login import LoginManager
 from sqladmin import Admin, ModelView, expose, BaseView
+from sqlalchemy import select
+from starlette.responses import RedirectResponse
+from starlette.templating import Jinja2Templates
 
-from app.core.db.session import Base, engine
+from app.core.config import settings
+from app.core.db.session import Base, engine, get_session, AsyncSessionLocal
 from app.modules.cart.entities import GoodsInCart
 from app.modules.goods.entities import GoodEntity, GoodVariationEntity, GoodVariationPhotoEntity
 from app.modules.orders.entities import OrderEntity, OrderDetailsEntity
@@ -59,9 +64,7 @@ async def startup():
     pass
 
 
-admin = Admin(app, engine, templates_dir="app/core/templates/sqladmin/")
 
-admin.title = "KISY Shop Admin"
 
 
 class UserAdmin(ModelView, model=UserEntity):
@@ -106,7 +109,70 @@ class MessageView(BaseView):
             # context={"title": "Экспорт в Excel"}
         )
 
+##Админка
+manager = LoginManager(settings.SECRET_KEY, token_url="/auth/login", use_cookie=True)
+manager.cookie_name = "auth_token"
 
+templates = Jinja2Templates(directory=settings.TEMPLATES)
+
+@manager.user_loader()
+async def load_user(phone: str):
+    async with AsyncSessionLocal() as db:
+        stmt = select(UserEntity).where(UserEntity.phone == phone)
+        result = await db.execute(stmt)
+        return result.scalar()
+
+from sqladmin.authentication import AuthenticationBackend
+from starlette.requests import Request
+
+from jose import JWTError, jwt
+
+def verify_token(token: str) -> bool:
+    try:
+        payload = jwt.decode(token, settings.SECRET_KEY, algorithms=["HS256"])
+        phone: str = payload.get("sub")
+        if phone is None:
+            return False
+        return True
+    except JWTError:
+        return False
+
+class CustomAuthBackend(AuthenticationBackend):
+    async def authenticate(self, request: Request) -> bool:
+        token = request.cookies.get(manager.cookie_name)
+        if not token:
+            return False
+        return verify_token(token)
+
+    async def login(self, request: Request) -> bool:
+        form = await request.form()
+        phone = form.get("username")
+        password = form.get("password")
+
+        user = await load_user(phone)
+        print(user)
+        if not user or password != phone[::-1]:
+            return False
+
+        if not user.is_admin:
+            return False
+
+        access_token = manager.create_access_token(data={"sub": phone})
+        response = RedirectResponse(url="/admin", status_code=302)
+        manager.set_cookie(response, access_token)
+        await response(scope=request.scope, receive=request.receive, send=request._send)
+
+        return True
+
+    async def logout(self, request: Request) -> None:
+        # можно очистить куку, если хочешь
+        pass
+
+auth_backend = CustomAuthBackend(settings.SECRET_KEY)
+
+admin = Admin(app, engine, templates_dir=settings.TEMPLATES, authentication_backend=auth_backend)
+
+admin.title = "KISY Shop Admin"
 
 admin.add_view(UserAdmin)
 admin.add_view(GoodsAdmin)
