@@ -192,10 +192,15 @@ class CDEKDeliveryMethod(BaseDeliveryMethod):
             "country_codes": filters.country_code,
         }
 
+        if settings.CDEK_DEBUG:
+            base_url = settings.CDEK_TEST_API_URL
+        else:
+            base_url = settings.CDEK_API_URL
+
         async with httpx.AsyncClient() as client:
             try:
                 response = await client.get(
-                    f"{settings.CDEK_TEST_API_URL}/location/cities",
+                    f"{base_url}/location/cities",
                     headers=headers,
                     params=params
                 )
@@ -212,6 +217,11 @@ class CDEKDeliveryMethod(BaseDeliveryMethod):
         Returns list of addresses basing on provided city_code
         :return:
         """
+        if settings.CDEK_DEBUG:
+            base_url = settings.CDEK_TEST_API_URL
+        else:
+            base_url = settings.CDEK_API_URL
+
         token = await self.get_cdek_auth_token()
         headers = {"Authorization": f"Bearer {token}"}
         params = {
@@ -221,7 +231,7 @@ class CDEKDeliveryMethod(BaseDeliveryMethod):
         async with httpx.AsyncClient() as client:
             try:
                 response = await client.get(
-                    f"{settings.CDEK_TEST_API_URL}/deliverypoints",
+                    f"{base_url}/deliverypoints",
                     headers=headers,
                     params=params
                 )
