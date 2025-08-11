@@ -5,6 +5,9 @@ from sqlalchemy import select
 from starlette.responses import RedirectResponse
 from starlette.templating import Jinja2Templates
 
+from starlette.staticfiles import StaticFiles
+from starlette.requests import Request
+
 from app.core.config import settings
 from app.core.db.session import Base, engine, get_session, AsyncSessionLocal
 from app.modules.cart.entities import GoodsInCart
@@ -40,6 +43,8 @@ app = FastAPI(title="KISY Shop Backend", version="1.0.0", contact={
     "Name": "Alex",
     "Telegram": "t.me/be1ov_v"
 })
+
+app.mount("/api/static", StaticFiles(directory="static"), name="static")
 
 app.include_router(users.router, prefix="/api/v1/users", tags=["Users"])
 app.include_router(auth.router, prefix="/api/v1/auth", tags=["Authentication"])
