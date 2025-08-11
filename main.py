@@ -44,7 +44,7 @@ app = FastAPI(title="KISY Shop Backend", version="1.0.0", contact={
     "Telegram": "t.me/be1ov_v"
 })
 
-app.mount("/static", StaticFiles(directory="static"), name="static")
+app.mount("/api/static", StaticFiles(directory="static"), name="static")
 
 app.include_router(users.router, prefix="/api/v1/users", tags=["Users"])
 app.include_router(auth.router, prefix="/api/v1/auth", tags=["Authentication"])
