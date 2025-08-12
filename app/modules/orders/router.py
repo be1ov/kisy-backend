@@ -15,7 +15,7 @@ async def create_goods(goods: CreateOrderSchema, current_user: UserEntity = Depe
         return {
             "status": "success",
             "order": order_data["order"],
-            "cdek_data": order_data["cdek_data"],
+            # "cdek_data": order_data["cdek_data"],
         }
     except OrderCreationError as e:
         raise HTTPException(status_code=403, detail=str(e))

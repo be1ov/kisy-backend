@@ -69,13 +69,13 @@ class OrderService:
 
         await self.db.flush()
 
-        cdek_data = await self.delivery_service.prepare_cdek_data(order_data, variation_map, order.id, current_user)
+        # cdek_data = await self.delivery_service.prepare_cdek_data(order_data, variation_map, order.id, current_user)
         await self.db.commit()
         await self.db.refresh(order)
 
         result = {
-            "order": order,
-            "cdek_data": cdek_data,
+            "order": order
+            # "cdek_data": cdek_data,
         }
         return result
 

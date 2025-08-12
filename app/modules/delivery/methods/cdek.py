@@ -10,6 +10,7 @@ from app.modules.delivery.schemas.create_order import CdekPackageItem, CdekPacka
 from app.modules.delivery.schemas.get_cities import ListResponse, DeliveryPointFilter, CityFilter, CityResponse, \
     DeliveryPointResponse
 from app.modules.goods.entities import GoodVariationEntity
+from app.modules.orders.entities import OrderEntity
 from app.modules.orders.schemas.create import CreateOrderSchema
 from app.modules.users.entities import UserEntity
 
@@ -19,30 +20,30 @@ class CDEKError(ValueError):
 
 
 class CDEKDeliveryMethod(BaseDeliveryMethod):
-    async def prepare_cdek_data(self, order_data: CreateOrderSchema, variations: tp.Dict[str, tp.Dict],
+    async def prepare_cdek_data(self, order_data: OrderEntity,
                                 order_id: str, current_user: UserEntity):
         package_items = []
         total_weight = 0
 
         for order_detail in order_data.details:
-            variation_id = order_detail.variation_id
-            variation = variations.get(variation_id, None)
+            variation = order_detail.variation
+            # variation = variations.get(variation_id, None)
             if variation is None:
                 raise CDEKError('Unknown variation id')
 
             item = CdekPackageItem(
-                ware_key=str(variation["id"]),
-                name=variation["title"],
-                cost=variation["latest_price"],
-                weight=variation["weight"],
+                ware_key=str(variation.id),
+                name=variation.title,
+                cost=variation.latest_price,
+                weight=variation.weight,
                 amount=int(order_detail.quantity),
                 payment={
-                    "value": variation["latest_price"] * order_detail.quantity,
+                    "value": variation.latest_price * order_detail.quantity,
                     "type": "CARD"
                 }
             )
             package_items.append(item)
-            total_weight += int(variation["weight"] * 1000 * order_detail.quantity)
+            total_weight += int(variation.weight * 1000 * order_detail.quantity)
 
         # Формируем посылку
         package = CdekPackage(
