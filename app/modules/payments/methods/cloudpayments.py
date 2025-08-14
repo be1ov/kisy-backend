@@ -41,6 +41,7 @@ class CloudPaymentsPaymentMethod(BasePaymentMethod):
 
             }
         }
+        print('test test TEST')
         print(payload)
 
         auth = (settings.CLOUDPAYMENTS.PUBLIC_ID, settings.CLOUDPAYMENTS.API_SECRET)
