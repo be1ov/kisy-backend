@@ -34,7 +34,7 @@ class CloudPaymentsPaymentMethod(BasePaymentMethod):
                                 "label": item.variation.title,
                                 "quantity": item.quantity,
                                 "price": item.price,
-                                "vat": item.variation.good.vat_rate,
+                                "vat": 5,
                                 "amount": item.quantity * item.price
                             } for item in order.details
                         ]
