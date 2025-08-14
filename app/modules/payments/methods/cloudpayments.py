@@ -16,6 +16,8 @@ class CloudPaymentsPaymentMethod(BasePaymentMethod):
         return body["InvoiceId"]
 
     async def get_payment_link(self, order: OrderEntity, payment_id: str = None) -> str:
+        print('test test TEST1')
+
         payload = {
             "Amount": order.amount + 350,
             "Currency": order.currency,
@@ -41,7 +43,7 @@ class CloudPaymentsPaymentMethod(BasePaymentMethod):
 
             }
         }
-        print('test test TEST')
+        print('test test TEST2')
         print(payload)
 
         auth = (settings.CLOUDPAYMENTS.PUBLIC_ID, settings.CLOUDPAYMENTS.API_SECRET)
