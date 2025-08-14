@@ -26,12 +26,14 @@ class CloudPaymentsPaymentMethod(BasePaymentMethod):
             "JsonData": {
                 "PaymentId": payment_id,
                 "cloudpayments": {
-                    "receipt": {
+                    "CustomerReceipt": {
                         "items": [
                             {
-                                "product": item.variation.title,
+                                "label": item.variation.title,
                                 "quantity": item.quantity,
-                                "price": item.price
+                                "price": item.price,
+                                "vat": item.variation.good.vat_rate,
+                                "amount": item.quantity * item.price
                             } for item in order.details
                         ]
                     }
