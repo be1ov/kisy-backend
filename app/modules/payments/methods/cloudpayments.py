@@ -22,7 +22,7 @@ class CloudPaymentsPaymentMethod(BasePaymentMethod):
             "Amount": order.amount + 350,
             "Currency": order.currency,
             "Description": order.description,
-            "RequireConfirmation": True,
+            # "RequireConfirmation": True,
             # "InvoiceId": payment_id,
             # "AccountId": order.user_id,
             # "SendEmail": True,
