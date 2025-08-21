@@ -22,27 +22,27 @@ class CloudPaymentsPaymentMethod(BasePaymentMethod):
             "Amount": order.amount + 350,
             "Currency": order.currency,
             "Description": order.description,
-            # "RequireConfirmation": True,
-            # "InvoiceId": payment_id,
-            # "AccountId": order.user_id,
-            # "SendEmail": True,
-            # "JsonData": {
-            #     "PaymentId": payment_id,
-            #     "cloudpayments": {
-            #         "CustomerReceipt": {
-            #             "items": [
-            #                 {
-            #                     "label": item.variation.title,
-            #                     "quantity": item.quantity,
-            #                     "price": item.price,
-            #                     "vat": 5,
-            #                     "amount": item.quantity * item.price
-            #                 } for item in order.details
-            #             ]
-            #         }
-            #     }
-            #
-            # }
+            "RequireConfirmation": True,
+            "InvoiceId": payment_id,
+            "AccountId": order.user_id,
+            "SendEmail": True,
+            "JsonData": {
+                "PaymentId": payment_id,
+                "cloudpayments": {
+                    "CustomerReceipt": {
+                        "items": [
+                            {
+                                "label": item.variation.title,
+                                "quantity": item.quantity,
+                                "price": item.price,
+                                "vat": 5,
+                                "amount": item.quantity * item.price
+                            } for item in order.details
+                        ]
+                    }
+                }
+
+            }
         }
         print('test test TEST2')
         print(payload)
