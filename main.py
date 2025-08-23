@@ -68,27 +68,43 @@ async def startup():
     # await init_db()
     pass
 
-
-
-
-
 class UserAdmin(ModelView, model=UserEntity):
     name_plural = "Пользователи"
+
+    column_list = [UserEntity.id, UserEntity.first_name, UserEntity.last_name, UserEntity.birth_date]
+    column_details_list = [UserEntity.id, UserEntity.first_name, UserEntity.last_name, UserEntity.birth_date]
+    column_searchable_list = [UserEntity.id, UserEntity.first_name, UserEntity.last_name, UserEntity.birth_date]
+    column_sortable_list = [UserEntity.id, UserEntity.first_name, UserEntity.last_name, UserEntity.birth_date]
+
 
 class GoodsAdmin(ModelView, model=GoodEntity):
     name_plural = "Товары"
 
+    column_list = [GoodEntity.title, GoodEntity.vat_rate]
+    column_details_list = [GoodEntity.title, GoodEntity.vat_rate]
+    column_searchable_list = [GoodEntity.title, GoodEntity.vat_rate]
+    column_sortable_list = [GoodEntity.title, GoodEntity.vat_rate]
+
 
 class GoodsVariationAdmin(ModelView, model=GoodVariationEntity):
     name_plural = "Вариации товаров"
+    
+    column_list = [GoodVariationEntity.title, GoodVariationEntity.latest_price]
+    column_details_list = [GoodVariationEntity.title, GoodVariationEntity.latest_price]
+    column_searchable_list = [GoodVariationEntity.title, GoodVariationEntity.latest_price]
+    column_sortable_list = [GoodVariationEntity.title, GoodVariationEntity.latest_price]
 
 
 class GoodVariationPhotoEntityAdmin(ModelView, model=GoodVariationPhotoEntity):
     name_plural = "Фотографии"
 
+    column_list = [GoodVariationPhotoEntity.id, GoodVariationPhotoEntity.variation, GoodVariationPhotoEntity.is_main]
+    column_details_list = [GoodVariationPhotoEntity.id, GoodVariationPhotoEntity.variation, GoodVariationPhotoEntity.is_main]
+    column_searchable_list = [GoodVariationPhotoEntity.id, GoodVariationPhotoEntity.variation, GoodVariationPhotoEntity.is_main]
+    column_sortable_list = [GoodVariationPhotoEntity.id, GoodVariationPhotoEntity.variation, GoodVariationPhotoEntity.is_main]
 
-class GoodVariationPriceEntityAdmin(ModelView, model=GoodVariationPriceEntity):
-    name_plural = "Установка цен"
+
+
 
 class ExportView(BaseView):
     name = "Экспорт заказов"

@@ -50,6 +50,9 @@ class GoodVariationEntity(Base):
         cascade="all, delete-orphan",
     )
 
+    def __str__(self):
+        return self.title
+
     @property
     def receipt_description(self) -> str:
         if self.title == self.good.title:
@@ -65,6 +68,9 @@ class GoodVariationPhotoEntity(Base):
     id: Mapped[str] = mapped_column(String, primary_key=True, default=lambda: str(uuid.uuid4()))
     variation_id: Mapped[str] = mapped_column(ForeignKey('goods_variations.id', ondelete="CASCADE"))
     url: Mapped[str] = mapped_column(String)
-    is_main: Mapped[str] = mapped_column(Boolean)
+    is_main: Mapped[bool] = mapped_column(Boolean)
 
     variation: Mapped["GoodVariationEntity"] = relationship(back_populates="photos")
+
+    def __str__(self):
+        return f"{self.variation.title} ({self.id[-4:]})"
