@@ -204,7 +204,6 @@ admin.add_view(UserAdmin)
 admin.add_view(GoodsAdmin)
 admin.add_view(GoodsVariationAdmin)
 admin.add_view(GoodVariationPhotoEntityAdmin)
-admin.add_view(GoodVariationPriceEntityAdmin)
 admin.add_view(ExportView)
 admin.add_view(MessageView)
 
