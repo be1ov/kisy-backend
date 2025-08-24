@@ -98,10 +98,10 @@ class GoodsVariationAdmin(ModelView, model=GoodVariationEntity):
 class GoodVariationPhotoEntityAdmin(ModelView, model=GoodVariationPhotoEntity):
     name_plural = "Фотографии"
 
-    column_list = [GoodVariationPhotoEntity.id, GoodVariationPhotoEntity.variation, GoodVariationPhotoEntity.is_main]
-    column_details_list = [GoodVariationPhotoEntity.id, GoodVariationPhotoEntity.variation, GoodVariationPhotoEntity.is_main]
-    column_searchable_list = [GoodVariationPhotoEntity.id, GoodVariationPhotoEntity.variation, GoodVariationPhotoEntity.is_main]
-    column_sortable_list = [GoodVariationPhotoEntity.id, GoodVariationPhotoEntity.variation, GoodVariationPhotoEntity.is_main]
+    column_list = [GoodVariationPhotoEntity.id, GoodVariationPhotoEntity.variation.title, GoodVariationPhotoEntity.is_main]
+    column_details_list = [GoodVariationPhotoEntity.id, GoodVariationPhotoEntity.variation.title, GoodVariationPhotoEntity.is_main]
+    column_searchable_list = [GoodVariationPhotoEntity.id, GoodVariationPhotoEntity.variation.title, GoodVariationPhotoEntity.is_main]
+    column_sortable_list = [GoodVariationPhotoEntity.id, GoodVariationPhotoEntity.variation.title, GoodVariationPhotoEntity.is_main]
 
 
 
