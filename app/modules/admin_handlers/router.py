@@ -31,6 +31,8 @@ async def get_excel_orders(start_date: Optional[datetime] = Query(None, descript
 async def send_messages(photo: UploadFile = File(...), caption: str = Form(...), service: SendingMessages = Depends()):
     try:
         file_url: str = ""
+        print('handler')
+        print(photo)
         if photo:
             file_url  = await service.save_uploaded_file(photo)
 
