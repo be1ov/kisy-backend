@@ -48,6 +48,8 @@ class SendingMessages:
                 print(photo)
                 print(message)
                 if photo:
+                    print('with photo')
+                    print(user.telegram_id)
                     await bot.send_photo(
                         chat_id=user.telegram_id,
                         photo=photo,
