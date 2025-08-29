@@ -16,6 +16,8 @@ from app.core.config import settings
 from app.core.db.session import get_session
 from app.modules.goods.entities import GoodEntity, GoodVariationEntity
 from app.modules.orders.entities import OrderEntity, OrderDetailsEntity
+from app.modules.payments.entities import PaymentEntity
+from app.modules.payments.enums.payment_statuses import PaymentStatuses
 from app.modules.users.entities import UserEntity
 
 from aiogram import Bot
@@ -44,11 +46,17 @@ class SendingMessages:
             try:
                 print(photo)
                 print(message)
-                await bot.send_photo(
-                    chat_id=user.telegram_id,
-                    photo=photo,
-                    caption=message
-                )
+                if photo:
+                    await bot.send_photo(
+                        chat_id=user.telegram_id,
+                        photo=photo,
+                        caption=message
+                    )
+                else:
+                    await bot.send_message(
+                        chat_id=user.telegram_id,
+                        text=message
+                    )
                 success_count += 1
             except Exception as e:
                 failed_users.append(user.telegram_id)
@@ -110,8 +118,10 @@ class ExcelService:
             .join(OrderEntity.details)
             .join(OrderDetailsEntity.variation)
             .join(GoodVariationEntity.good)
+            .join(OrderEntity.payments)
             .where(OrderEntity.created_at >= start_date)
             .where(OrderEntity.created_at <= end_date)
+            .where(PaymentEntity.status == PaymentStatuses.SUCCESS)
             .order_by(OrderEntity.created_at)
         )
 
