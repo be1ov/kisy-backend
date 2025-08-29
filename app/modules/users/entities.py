@@ -16,6 +16,7 @@ class UserEntity(Base):
     first_name: Mapped[str] = mapped_column(String, nullable=True)
     last_name: Mapped[str] = mapped_column(String, nullable=True)
     birth_date: Mapped[datetime | None] = mapped_column(DateTime, nullable=True)
+    username: Mapped[str|None] = mapped_column(String, nullable=True)
 
     telegram_id: Mapped[int] = mapped_column(BigInteger, nullable=False, unique=True, default=0, server_default="")
 

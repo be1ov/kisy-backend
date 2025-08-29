@@ -71,10 +71,10 @@ async def startup():
 class UserAdmin(ModelView, model=UserEntity):
     name_plural = "Пользователи"
 
-    column_list = [UserEntity.id, UserEntity.first_name, UserEntity.last_name, UserEntity.birth_date]
-    column_details_list = [UserEntity.id, UserEntity.first_name, UserEntity.last_name, UserEntity.birth_date]
-    column_searchable_list = [UserEntity.id, UserEntity.first_name, UserEntity.last_name, UserEntity.birth_date]
-    column_sortable_list = [UserEntity.id, UserEntity.first_name, UserEntity.last_name, UserEntity.birth_date]
+    column_list = [UserEntity.telegram_id, UserEntity.username, UserEntity.first_name, UserEntity.last_name, UserEntity.birth_date]
+    column_details_list = [UserEntity.telegram_id, UserEntity.username, UserEntity.first_name, UserEntity.last_name, UserEntity.birth_date]
+    column_searchable_list = [UserEntity.telegram_id, UserEntity.username, UserEntity.first_name, UserEntity.last_name, UserEntity.birth_date]
+    column_sortable_list = [UserEntity.telegram_id, UserEntity.username, UserEntity.first_name, UserEntity.last_name, UserEntity.birth_date]
 
 
 class GoodsAdmin(ModelView, model=GoodEntity):

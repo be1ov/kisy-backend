@@ -71,6 +71,3 @@ class GoodVariationPhotoEntity(Base):
     is_main: Mapped[bool] = mapped_column(Boolean)
 
     variation: Mapped["GoodVariationEntity"] = relationship(back_populates="photos")
-
-    def __str__(self):
-        return f"{self.variation.title} ({self.id[-4:]})"
