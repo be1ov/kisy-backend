@@ -55,6 +55,8 @@ class SendingMessages:
                     )
                 else:
                     print('bez photo')
+                    print(user.telegram_id)
+                    print(message)
                     await bot.send_message(
                         chat_id=user.telegram_id,
                         text=message
