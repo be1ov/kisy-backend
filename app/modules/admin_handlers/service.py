@@ -36,6 +36,7 @@ class SendingMessages:
         result = await self.db.execute(select(UserEntity).where(UserEntity.phone == '+79319693552'))
         users = result.scalars().all()
 
+        print(users)
         if not users:
             return InvalidUsers("No users with telegram_id found")
 
