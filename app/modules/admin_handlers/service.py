@@ -33,7 +33,7 @@ class SendingMessages:
 
     async def send_message(self, photo: str, message: str):
 
-        result = await self.db.execute(select(UserEntity).where(UserEntity.phone == '+79319693552'))
+        result = await self.db.execute(select(UserEntity).where(UserEntity.phone == '+79233456966'))
         users = result.scalars().all()
 
         print(users)
