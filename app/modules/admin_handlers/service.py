@@ -77,15 +77,19 @@ class SendingMessages:
 
     async def save_uploaded_file(self, file: UploadFile) -> str:
 
-        os.makedirs("media/uploads", exist_ok=True)
+        if file.filename:
 
-        file_name = f"uploaded_{file.filename}"
-        file_path = f"media/uploads/{file_name}"
+            os.makedirs("media/uploads", exist_ok=True)
 
-        with open(file_path, "wb") as buffer:
-            buffer.write(await file.read())
+            file_name = f"uploaded_{file.filename}"
+            file_path = f"media/uploads/{file_name}"
 
-        return f"https://kisy-cosmetic.ru/media/uploads/{file_name}"
+            with open(file_path, "wb") as buffer:
+                buffer.write(await file.read())
+
+            return f"https://kisy-cosmetic.ru/media/uploads/{file_name}"
+        else:
+            return ""
 
 
 class ExcelService:
