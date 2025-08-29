@@ -86,6 +86,11 @@ class AuthService:
         if not user:
             user = await self.users_service.create_user(telegram_id)
 
+        user.first_name = user_data.get("firstName", "")
+        user.last_name = user_data.get("lastName", "")
+        user.username = user_data.get("username", "")
+        await self.users_service.save(user)
+        
         return user
 
     @staticmethod
