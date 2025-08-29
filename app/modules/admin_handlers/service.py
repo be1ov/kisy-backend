@@ -54,6 +54,7 @@ class SendingMessages:
                         caption=message
                     )
                 else:
+                    print('bez photo')
                     await bot.send_message(
                         chat_id=user.telegram_id,
                         text=message
