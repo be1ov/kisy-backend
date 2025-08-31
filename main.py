@@ -85,7 +85,8 @@ class GoodsAdmin(ModelView, model=GoodEntity):
     column_searchable_list = [GoodEntity.title]
     column_sortable_list = [GoodEntity.title]
 
-    column_exclude_list = [GoodEntity.vat_rate]
+    form_excluded_columns = [GoodEntity.vat_rate]
+    # column_exclude_list = [GoodEntity.vat_rate]
 
 
 class GoodsVariationAdmin(ModelView, model=GoodVariationEntity):
