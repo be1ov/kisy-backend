@@ -21,6 +21,7 @@ from app.modules.payments.enums.payment_statuses import PaymentStatuses
 from app.modules.users.entities import UserEntity
 
 from aiogram import Bot
+from aiogram.types import URLInputFile
 
 bot = Bot(token=settings.BOT_TOKEN)
 
@@ -44,13 +45,9 @@ class SendingMessages:
         for user in users:
             try:
                 if photo:
-                    await bot.send_message(
-                        chat_id=user.telegram_id,
-                        text=photo
-                    )
                     await bot.send_photo(
                         chat_id=user.telegram_id,
-                        photo=photo,
+                        photo=URLInputFile(photo),
                         caption=message
                     )
                 else:
