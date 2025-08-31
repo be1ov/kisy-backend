@@ -80,10 +80,12 @@ class UserAdmin(ModelView, model=UserEntity):
 class GoodsAdmin(ModelView, model=GoodEntity):
     name_plural = "Товары"
 
-    column_list = [GoodEntity.title, GoodEntity.vat_rate]
-    column_details_list = [GoodEntity.title, GoodEntity.vat_rate]
-    column_searchable_list = [GoodEntity.title, GoodEntity.vat_rate]
-    column_sortable_list = [GoodEntity.title, GoodEntity.vat_rate]
+    column_list = [GoodEntity.title]
+    column_details_list = [GoodEntity.title]
+    column_searchable_list = [GoodEntity.title]
+    column_sortable_list = [GoodEntity.title]
+
+    column_exclude_list = [GoodEntity.vat_rate]
 
 
 class GoodsVariationAdmin(ModelView, model=GoodVariationEntity):
