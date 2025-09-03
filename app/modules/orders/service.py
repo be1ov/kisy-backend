@@ -15,6 +15,7 @@ from app.modules.goods.entities import GoodVariationEntity
 from app.modules.orders.entities import OrderEntity, OrderDetailsEntity
 from app.modules.orders.schemas.create import CreateOrderSchema
 from app.modules.users.entities import UserEntity
+from app.modules.cart.service import CartService
 
 
 class OrderCreationError(ValueError):
@@ -26,9 +27,13 @@ class UndefinedOrder(ValueError):
 
 
 class OrderService:
-    def __init__(self, db: AsyncSession = Depends(get_session), delivery_service: DeliveryService = Depends()):
+    def __init__(self, 
+                 db: AsyncSession = Depends(get_session),
+                 delivery_service: DeliveryService = Depends(),
+                 cart_service: CartService = Depends()):
         self.db = db
         self.delivery_service = delivery_service
+        self.cart_service = cart_service
 
 
     async def create_order(self, order_data: CreateOrderSchema, current_user: UserEntity):
@@ -72,6 +77,8 @@ class OrderService:
         # cdek_data = await self.delivery_service.prepare_cdek_data(order_data, variation_map, order.id, current_user)
         await self.db.commit()
         await self.db.refresh(order)
+
+        await self.cart_service.clear_cart(current_user)
 
         result = {
             "order": order
