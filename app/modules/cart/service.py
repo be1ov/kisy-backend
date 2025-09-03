@@ -1,5 +1,5 @@
 from fastapi import Depends
-from sqlalchemy import select
+from sqlalchemy import select, delete
 from sqlalchemy.ext.asyncio import AsyncSession
 from sqlalchemy.orm import selectinload
 
@@ -75,3 +75,11 @@ class CartService:
         )
         result = await self.db.execute(stmt)
         return result.scalars().all()
+
+    async def clear_cart(self, user: UserEntity):
+        stmt = (
+            delete(GoodsInCart)
+            .where(GoodsInCart.user == user)
+        )
+        await session.execute(stmt)
+        await session.commit()
