@@ -89,10 +89,8 @@ class AuthService:
         user.first_name = user_data.get("firstName", "")
         user.last_name = user_data.get("lastName", "")
         user.username = user_data.get("username", "")
-        await self.users_service.save(user)
+        return await self.users_service.save(user)
         
-        return user
-
     @staticmethod
     def generate_access_token(user: UserEntity) -> str:
         expire = datetime.now(timezone.utc) + timedelta(minutes=settings.ACCESS_TOKEN_EXPIRE_MINUTES)
