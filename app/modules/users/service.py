@@ -38,6 +38,7 @@ class UserService:
     async def save(self, user: UserEntity) -> UserEntity:
         self._db.add(user)
         await self._db.commit()
+        await self._db.refresh(user)
         return user
 
     async def finish_signup(self, data: SignupSchema, user: UserEntity) -> UserEntity:
