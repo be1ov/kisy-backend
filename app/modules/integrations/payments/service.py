@@ -20,7 +20,9 @@ class PaymentIntegrationService:
 
     async def process_payment(self, method: str, body):
         payment_method_service = self.payments_service.get_payment_method(PaymentMethods(method))
+        print('jopa')
         payment_id = await payment_method_service.process_payment(body)
+        print('konec jopi')
 
         stmt = select(PaymentEntity).where(PaymentEntity.id == payment_id)
         result = await self.db.execute(stmt)
