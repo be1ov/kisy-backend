@@ -29,7 +29,7 @@ class PaymentIntegrationService:
                 .where(PaymentEntity.id == payment_id)
                 .options(selectinload(PaymentEntity.order)
                          .selectinload(OrderEntity.user)
-                         .selectinload(PaymentEntity.order)
+                ,selectinload(PaymentEntity.order)
                          .selectinload(OrderEntity.details)))
 
         result = await self.db.execute(stmt)
