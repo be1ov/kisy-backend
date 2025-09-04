@@ -18,7 +18,7 @@ class PaymentIntegrationService:
         self.cdek_service = cdek_service
         self.db = db
 
-    async def process_payment(self, method: str, body: dict = Body(...)):
+    async def process_payment(self, method: str, body):
         payment_method_service = self.payments_service.get_payment_method(PaymentMethods(method))
         print('jopa')
         payment_id = await payment_method_service.process_payment(body)

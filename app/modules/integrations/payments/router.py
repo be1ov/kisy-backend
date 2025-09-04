@@ -10,8 +10,8 @@ router = APIRouter()
 @router.post("/integration/payment_success")
 async def payment_success(method: str, request: Request, service: PaymentIntegrationService = Depends()):
     try:
-
-        await service.process_payment(method, request.body)
+        body = await request.body()
+        await service.process_payment(method, body)
 
         return {
             "code": 0
