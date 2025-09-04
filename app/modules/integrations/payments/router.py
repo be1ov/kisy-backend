@@ -1,3 +1,4 @@
+import json
 from webbrowser import Error
 
 from fastapi import APIRouter, Depends, Request
@@ -11,7 +12,8 @@ router = APIRouter()
 async def payment_success(method: str, request: Request, service: PaymentIntegrationService = Depends()):
     try:
         body = await request.body()
-        await service.process_payment(method, body)
+        data = json.loads(body)
+        await service.process_payment(method, data)
 
         return {
             "code": 0
