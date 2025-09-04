@@ -4,7 +4,7 @@ from sqlalchemy.ext.asyncio import AsyncSession
 from sqlalchemy.orm import selectinload
 
 from app.core.db.session import get_session
-from app.modules.orders.entities import OrderEntity
+from app.modules.orders.entities import OrderEntity, OrderDetailsEntity
 from app.modules.payments.entities import PaymentEntity
 from app.modules.payments.enums.payment_methods import PaymentMethods
 from app.modules.payments.enums.payment_statuses import PaymentStatuses
@@ -30,7 +30,8 @@ class PaymentIntegrationService:
                 .options(selectinload(PaymentEntity.order)
                          .selectinload(OrderEntity.user)
                 ,selectinload(PaymentEntity.order)
-                         .selectinload(OrderEntity.details)))
+                         .selectinload(OrderEntity.details)
+                         .selectinload(OrderDetailsEntity.variation)))
 
         result = await self.db.execute(stmt)
         payment = result.scalars().first()
