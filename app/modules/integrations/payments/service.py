@@ -44,11 +44,14 @@ class PaymentIntegrationService:
 
         payment.status = PaymentStatuses.SUCCESS
 
-        self.db.add(payment)
-        await self.db.commit()
+
+
 
         order: OrderEntity = payment.order
 
         current_user: UserEntity = order.user
 
         await self.cdek_service.prepare_cdek_data(order, order.id, current_user)
+
+        self.db.add(payment)
+        await self.db.commit()
