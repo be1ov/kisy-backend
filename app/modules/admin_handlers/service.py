@@ -21,6 +21,7 @@ from app.modules.payments.enums.payment_statuses import PaymentStatuses
 from app.modules.users.entities import UserEntity
 
 from aiogram import Bot
+from aiogram.types import URLInputFile
 
 bot = Bot(token=settings.BOT_TOKEN)
 
@@ -35,8 +36,6 @@ class SendingMessages:
 
         result = await self.db.execute(select(UserEntity).where(UserEntity.phone == '+79233456966'))
         users = result.scalars().all()
-
-        print(users)
         if not users:
             return InvalidUsers("No users with telegram_id found")
 
@@ -45,20 +44,13 @@ class SendingMessages:
 
         for user in users:
             try:
-                print(photo)
-                print(message)
                 if photo:
-                    print('with photo')
-                    print(user.telegram_id)
                     await bot.send_photo(
                         chat_id=user.telegram_id,
-                        photo=photo,
+                        photo=URLInputFile(photo),
                         caption=message
                     )
                 else:
-                    print('bez photo')
-                    print(user.telegram_id)
-                    print(message)
                     await bot.send_message(
                         chat_id=user.telegram_id,
                         text=message

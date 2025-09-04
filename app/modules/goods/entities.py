@@ -15,7 +15,7 @@ class GoodEntity(Base):
     title: Mapped[str] = mapped_column(String)
     description: Mapped[str] = mapped_column(String)
 
-    vat_rate: Mapped[VATRate] = mapped_column(Enum(VATRate, name="vat_rate", native_enum=False), default=VATRate.VAT_20)
+    vat_rate: Mapped[VATRate] = mapped_column(Enum(VATRate, name="vat_rate", native_enum=False), default=VATRate.VAT_5)
 
     variations: Mapped[list["GoodVariationEntity"]] = relationship(
         back_populates="good",

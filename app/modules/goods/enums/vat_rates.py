@@ -6,6 +6,7 @@ class VATRate(Enum):
     VAT_0 = 1
     VAT_10 = 2
     VAT_20 = 3
+    VAT_5 = 4
 
     def get_rate(self) -> int:
         """
@@ -15,5 +16,6 @@ class VATRate(Enum):
             VATRate.NONE: 0,
             VATRate.VAT_0: 0,
             VATRate.VAT_10: 10,
-            VATRate.VAT_20: 20
+            VATRate.VAT_20: 20,
+            VATRate.VAT_5: 5
         }[self]

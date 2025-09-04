@@ -45,6 +45,7 @@ app = FastAPI(title="KISY Shop Backend", version="1.0.0", contact={
 })
 
 app.mount("/api/static", StaticFiles(directory="static"), name="static")
+app.mount("/media", StaticFiles(directory="media"), name="media")
 
 app.include_router(users.router, prefix="/api/v1/users", tags=["Users"])
 app.include_router(auth.router, prefix="/api/v1/auth", tags=["Authentication"])
@@ -80,10 +81,13 @@ class UserAdmin(ModelView, model=UserEntity):
 class GoodsAdmin(ModelView, model=GoodEntity):
     name_plural = "Товары"
 
-    column_list = [GoodEntity.title, GoodEntity.vat_rate]
-    column_details_list = [GoodEntity.title, GoodEntity.vat_rate]
-    column_searchable_list = [GoodEntity.title, GoodEntity.vat_rate]
-    column_sortable_list = [GoodEntity.title, GoodEntity.vat_rate]
+    column_list = [GoodEntity.title]
+    column_details_list = [GoodEntity.title]
+    column_searchable_list = [GoodEntity.title]
+    column_sortable_list = [GoodEntity.title]
+
+    form_excluded_columns = [GoodEntity.vat_rate]
+    # column_exclude_list = [GoodEntity.vat_rate]
 
 
 class GoodsVariationAdmin(ModelView, model=GoodVariationEntity):
