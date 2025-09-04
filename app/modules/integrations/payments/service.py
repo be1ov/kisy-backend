@@ -25,7 +25,13 @@ class PaymentIntegrationService:
         payment_id = await payment_method_service.process_payment(body)
         print('konec jopi')
 
-        stmt = select(PaymentEntity).where(PaymentEntity.id == payment_id).options(selectinload(PaymentEntity.order).selectinload(OrderEntity.user).selectinload(OrderEntity.details))
+        stmt = (select(PaymentEntity)
+                .where(PaymentEntity.id == payment_id)
+                .options(selectinload(PaymentEntity.order)
+                         .selectinload(OrderEntity.user)
+                         .selectinload(PaymentEntity.order)
+                         .selectinload(OrderEntity.details)))
+
         result = await self.db.execute(stmt)
         payment = result.scalars().first()
         if payment is None:
