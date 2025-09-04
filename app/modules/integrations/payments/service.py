@@ -1,6 +1,7 @@
 from fastapi import Depends, Body
 from sqlalchemy import select
 from sqlalchemy.ext.asyncio import AsyncSession
+from sqlalchemy.orm import selectinload
 
 from app.core.db.session import get_session
 from app.modules.orders.entities import OrderEntity
@@ -24,7 +25,7 @@ class PaymentIntegrationService:
         payment_id = await payment_method_service.process_payment(body)
         print('konec jopi')
 
-        stmt = select(PaymentEntity).where(PaymentEntity.id == payment_id)
+        stmt = select(PaymentEntity).where(PaymentEntity.id == payment_id).options(selectinload(PaymentEntity.order))
         result = await self.db.execute(stmt)
         payment = result.scalars().first()
         if payment is None:
