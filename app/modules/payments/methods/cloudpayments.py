@@ -13,6 +13,7 @@ class LinkException(ValueError):
 
 class CloudPaymentsPaymentMethod(BasePaymentMethod):
     async def process_payment(self, body: tp.Any) -> str:
+        print(body)
         return body["InvoiceId"]
 
     async def get_payment_link(self, order: OrderEntity, payment_id: str = None) -> str:
