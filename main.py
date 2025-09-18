@@ -11,7 +11,11 @@ from starlette.requests import Request
 from app.core.config import settings
 from app.core.db.session import Base, engine, get_session, AsyncSessionLocal
 from app.modules.cart.entities import GoodsInCart
-from app.modules.goods.entities import GoodEntity, GoodVariationEntity, GoodVariationPhotoEntity
+from app.modules.goods.entities import (
+    GoodEntity,
+    GoodVariationEntity,
+    GoodVariationPhotoEntity,
+)
 from app.modules.orders.entities import OrderEntity, OrderDetailsEntity
 from app.modules.prices.entities import GoodVariationPriceEntity
 
@@ -25,6 +29,7 @@ from app.modules.delivery import router as delivery
 from app.modules.payments import router as payments
 from app.modules.integrations.payments import router as integrations_payments
 from app.modules.admin_handlers import router as admin_handlers
+from app.modules.lk import router as lk
 
 from app.modules.users.entities import UserEntity
 
@@ -36,13 +41,14 @@ _ = [
     GoodVariationPriceEntity,
     GoodsInCart,
     OrderEntity,
-    OrderDetailsEntity
+    OrderDetailsEntity,
 ]
 
-app = FastAPI(title="KISY Shop Backend", version="1.0.0", contact={
-    "Name": "Alex",
-    "Telegram": "t.me/be1ov_v"
-})
+app = FastAPI(
+    title="KISY Shop Backend",
+    version="1.0.0",
+    contact={"Name": "Alex", "Telegram": "t.me/be1ov_v"},
+)
 
 app.mount("/api/static", StaticFiles(directory="static"), name="static")
 app.mount("/media", StaticFiles(directory="media"), name="media")
@@ -55,8 +61,13 @@ app.include_router(cart.router, prefix="/api/v1/cart", tags=["Cart"])
 app.include_router(orders.router, prefix="/api/v1/orders", tags=["Orders"])
 app.include_router(delivery.router, prefix="/api/v1/delivery", tags=["Delivery"])
 app.include_router(payments.router, prefix="/api/v1/payments", tags=["Payments"])
-app.include_router(integrations_payments.router, prefix="/api/v1", tags=["Integrations"])
-app.include_router(admin_handlers.router, prefix="/api/v1/admin_routers", tags=["admin_routers"])
+app.include_router(
+    integrations_payments.router, prefix="/api/v1", tags=["Integrations"]
+)
+app.include_router(
+    admin_handlers.router, prefix="/api/v1/admin_routers", tags=["admin_routers"]
+)
+app.include_router(lk.router, prefix="/api/v1/lk", tags=["lk"])
 
 
 async def init_db():
@@ -69,13 +80,38 @@ async def startup():
     # await init_db()
     pass
 
+
 class UserAdmin(ModelView, model=UserEntity):
     name_plural = "Пользователи"
 
-    column_list = [UserEntity.telegram_id, UserEntity.username, UserEntity.first_name, UserEntity.last_name, UserEntity.birth_date]
-    column_details_list = [UserEntity.telegram_id, UserEntity.username, UserEntity.first_name, UserEntity.last_name, UserEntity.birth_date]
-    column_searchable_list = [UserEntity.telegram_id, UserEntity.username, UserEntity.first_name, UserEntity.last_name, UserEntity.birth_date]
-    column_sortable_list = [UserEntity.telegram_id, UserEntity.username, UserEntity.first_name, UserEntity.last_name, UserEntity.birth_date]
+    column_list = [
+        UserEntity.telegram_id,
+        UserEntity.username,
+        UserEntity.first_name,
+        UserEntity.last_name,
+        UserEntity.birth_date,
+    ]
+    column_details_list = [
+        UserEntity.telegram_id,
+        UserEntity.username,
+        UserEntity.first_name,
+        UserEntity.last_name,
+        UserEntity.birth_date,
+    ]
+    column_searchable_list = [
+        UserEntity.telegram_id,
+        UserEntity.username,
+        UserEntity.first_name,
+        UserEntity.last_name,
+        UserEntity.birth_date,
+    ]
+    column_sortable_list = [
+        UserEntity.telegram_id,
+        UserEntity.username,
+        UserEntity.first_name,
+        UserEntity.last_name,
+        UserEntity.birth_date,
+    ]
 
 
 class GoodsAdmin(ModelView, model=GoodEntity):
@@ -92,10 +128,13 @@ class GoodsAdmin(ModelView, model=GoodEntity):
 
 class GoodsVariationAdmin(ModelView, model=GoodVariationEntity):
     name_plural = "Вариации товаров"
-    
+
     column_list = [GoodVariationEntity.title, GoodVariationEntity.latest_price]
     column_details_list = [GoodVariationEntity.title, GoodVariationEntity.latest_price]
-    column_searchable_list = [GoodVariationEntity.title, GoodVariationEntity.latest_price]
+    column_searchable_list = [
+        GoodVariationEntity.title,
+        GoodVariationEntity.latest_price,
+    ]
     column_sortable_list = [GoodVariationEntity.title, GoodVariationEntity.latest_price]
 
 
@@ -123,9 +162,10 @@ class ExportView(BaseView):
     async def export_page(self, request):
         return await self.templates.TemplateResponse(
             request=request,
-            name="export1.html"
+            name="export1.html",
             # context={"title": "Экспорт в Excel"}
         )
+
 
 class MessageView(BaseView):
     name = "Рассылка сообщений"
@@ -135,15 +175,17 @@ class MessageView(BaseView):
     async def messages(self, request):
         return await self.templates.TemplateResponse(
             request=request,
-            name="message.html"
+            name="message.html",
             # context={"title": "Экспорт в Excel"}
         )
+
 
 ##Админка
 manager = LoginManager(settings.SECRET_KEY, token_url="/auth/login", use_cookie=True)
 manager.cookie_name = "auth_token"
 
 templates = Jinja2Templates(directory=settings.TEMPLATES)
+
 
 @manager.user_loader()
 async def load_user(phone: str):
@@ -152,10 +194,12 @@ async def load_user(phone: str):
         result = await db.execute(stmt)
         return result.scalar()
 
+
 from sqladmin.authentication import AuthenticationBackend
 from starlette.requests import Request
 
 from jose import JWTError, jwt
+
 
 def verify_token(token: str) -> bool:
     try:
@@ -166,6 +210,7 @@ def verify_token(token: str) -> bool:
         return True
     except JWTError:
         return False
+
 
 class CustomAuthBackend(AuthenticationBackend):
     async def authenticate(self, request: Request) -> bool:
@@ -198,9 +243,12 @@ class CustomAuthBackend(AuthenticationBackend):
         # можно очистить куку, если хочешь
         pass
 
+
 auth_backend = CustomAuthBackend(settings.SECRET_KEY)
 
-admin = Admin(app, engine, templates_dir=settings.TEMPLATES, authentication_backend=auth_backend)
+admin = Admin(
+    app, engine, templates_dir=settings.TEMPLATES, authentication_backend=auth_backend
+)
 
 admin.title = "KISY Shop Admin"
 

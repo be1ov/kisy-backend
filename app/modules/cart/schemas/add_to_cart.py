@@ -5,4 +5,4 @@ from pydantic import BaseModel
 
 class AddToCartSchema(BaseModel):
     variation_id: str
-    quantity: tp.Optional[int]
+    quantity: int = 1

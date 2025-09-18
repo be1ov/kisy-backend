@@ -10,6 +10,7 @@ from sqlalchemy.testing.pickleable import Order
 
 from app.core.config import settings
 from app.core.db.session import get_session
+from app.modules.delivery.enums.delivery_statuses import DeliveryStatusesEnum
 from app.modules.delivery.service import DeliveryService
 from app.modules.goods.entities import GoodVariationEntity
 from app.modules.orders.entities import OrderEntity, OrderDetailsEntity
@@ -27,16 +28,19 @@ class UndefinedOrder(ValueError):
 
 
 class OrderService:
-    def __init__(self, 
-                 db: AsyncSession = Depends(get_session),
-                 delivery_service: DeliveryService = Depends(),
-                 cart_service: CartService = Depends()):
+    def __init__(
+        self,
+        db: AsyncSession = Depends(get_session),
+        delivery_service: DeliveryService = Depends(),
+        cart_service: CartService = Depends(),
+    ):
         self.db = db
         self.delivery_service = delivery_service
         self.cart_service = cart_service
 
-
-    async def create_order(self, order_data: CreateOrderSchema, current_user: UserEntity):
+    async def create_order(
+        self, order_data: CreateOrderSchema, current_user: UserEntity
+    ):
 
         variation_ids = [detail.variation_id for detail in order_data.details]
 
@@ -53,12 +57,14 @@ class OrderService:
 
             variation = variation_map[detail.variation_id]
             if variation["latest_price"] is None:
-                raise OrderCreationError(f"Variation {variation['id']} has no latest price set")
+                raise OrderCreationError(
+                    f"Variation {variation['id']} has no latest price set"
+                )
 
         order = OrderEntity(
             user_id=current_user.id,
-            delivery_point = order_data.delivery_point,
-            delivery_method = order_data.delivery_method,
+            delivery_point=order_data.delivery_point,
+            delivery_method=order_data.delivery_method,
         )
         self.db.add(order)
 
@@ -68,7 +74,7 @@ class OrderService:
                 order=order,
                 variation_id=variation["id"],
                 quantity=detail.quantity,
-                price=variation["latest_price"]
+                price=variation["latest_price"],
             )
             self.db.add(order_detail)
 
@@ -95,14 +101,41 @@ class OrderService:
         :param order_id: Order id
         :return:
         """
-        stmt = select(OrderEntity).options(
-            selectinload(OrderEntity.user),
-            selectinload(OrderEntity.payments),
-            selectinload(OrderEntity.details).selectinload(OrderDetailsEntity.variation)
-        ).where(OrderEntity.id == order_id)
+        stmt = (
+            select(OrderEntity)
+            .options(
+                selectinload(OrderEntity.user),
+                selectinload(OrderEntity.payments),
+                selectinload(OrderEntity.details).selectinload(
+                    OrderDetailsEntity.variation
+                ),
+            )
+            .where(OrderEntity.id == order_id)
+        )
         result = await self.db.execute(stmt)
         order = result.scalars().first()
         if not order:
             raise UndefinedOrder("Order not found")
 
         return order
+
+    async def get_status(self, order: OrderEntity) -> tp.Optional[DeliveryStatusesEnum]:
+        status = await self.delivery_service.get_order_status(order)
+        return status if status else None
+
+    async def get_orders_by_user(self, user: UserEntity) -> tp.List[OrderEntity]:
+        stmt = (
+            select(OrderEntity)
+            .options(
+                selectinload(OrderEntity.user),
+                selectinload(OrderEntity.payments),
+                selectinload(OrderEntity.details).selectinload(
+                    OrderDetailsEntity.variation
+                ),
+            )
+            .where(OrderEntity.user_id == user.id)
+            .order_by(OrderEntity.created_at.desc())
+        )
+        result = await self.db.execute(stmt)
+        orders = result.scalars().all()
+        return list(orders)

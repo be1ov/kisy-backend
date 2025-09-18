@@ -11,16 +11,26 @@ router = APIRouter()
 
 
 @router.get("/")
-async def get(cart_service: CartService = Depends(), current_user: UserEntity = Depends(get_current_user)):
+async def get(
+    cart_service: CartService = Depends(),
+    current_user: UserEntity = Depends(get_current_user),
+):
     return await cart_service.get(current_user)
 
 
 @router.post("/add")
-async def add(data: AddToCartSchema, cart_service: CartService = Depends(), goods_service: GoodsService = Depends(),
-              current_user: UserEntity = Depends(get_current_user)):
+async def add(
+    data: AddToCartSchema,
+    cart_service: CartService = Depends(),
+    goods_service: GoodsService = Depends(),
+    current_user: UserEntity = Depends(get_current_user),
+):
     variation = await goods_service.get_variation_by_id(data.variation_id)
     if variation is None:
         raise HTTPException(detail="Undefined variation", status_code=404)
+
+    if data.quantity < 1:
+        raise HTTPException(detail="Quantity must be at least 1", status_code=400)
 
     await cart_service.add_to_cart(current_user, variation, data.quantity)
 
@@ -28,15 +38,17 @@ async def add(data: AddToCartSchema, cart_service: CartService = Depends(), good
         "status": "success",
     }
 
+
 @router.delete("/delete")
-async def delete(data: AddToCartSchema, cart_service: CartService = Depends(), goods_service: GoodsService = Depends(),
-              current_user: UserEntity = Depends(get_current_user)):
+async def delete(
+    data: AddToCartSchema,
+    cart_service: CartService = Depends(),
+    goods_service: GoodsService = Depends(),
+    current_user: UserEntity = Depends(get_current_user),
+):
     variation = await goods_service.get_variation_by_id(data.variation_id)
     if variation is None:
         raise HTTPException(detail="Undefined variation", status_code=404)
 
     await cart_service.delete_from_cart(current_user, variation, data.quantity)
-    return {
-        "status": "success"
-    }
-
+    return {"status": "success"}

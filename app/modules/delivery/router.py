@@ -13,13 +13,21 @@ async def get_delivery_methods(service: DeliveryService = Depends()):
 
 
 @router.get("/countries")
-async def get_countries(body: GetCountriesSchema = Depends(), service: DeliveryService = Depends()):
+async def get_countries(
+    body: GetCountriesSchema = Depends(), service: DeliveryService = Depends()
+):
     return await service.get_countries(body)
 
+
 @router.get("/cities")
-async def get_cities(body: CityFilter = Depends(), service: DeliveryService = Depends()):
+async def get_cities(
+    body: CityFilter = Depends(), service: DeliveryService = Depends()
+):
     return await service.get_cities(body)
 
+
 @router.get("/delivery")
-async def get_delivery(body: DeliveryPointFilter = Depends(), service: DeliveryService = Depends()):
+async def get_delivery(
+    body: DeliveryPointFilter = Depends(), service: DeliveryService = Depends()
+):
     return await service.get_addresses(body)

@@ -8,6 +8,7 @@ class OrderDetailSchema(BaseModel):
     variation_id: str
     quantity: int = 1
 
+
 class CreateOrderSchema(BaseModel):
     delivery_method: DeliveryMethods
     delivery_point: str

@@ -1,23 +1,18 @@
+from app.modules.delivery.enums.delivery_statuses import DeliveryStatusesEnum
 from app.modules.delivery.methods.cdek import CDEKDeliveryMethod
 from app.modules.delivery.methods.base import BaseDeliveryMethod
 from app.modules.delivery.enums.delivery_methods import DeliveryMethods
 from app.modules.delivery.schemas.get_cities import CityFilter, DeliveryPointFilter
 from app.modules.delivery.schemas.get_countries import GetCountriesSchema
-from app.modules.goods.entities import GoodVariationEntity
-from app.modules.orders.schemas.create import CreateOrderSchema
+from app.modules.orders.entities import OrderEntity
 
 import typing as tp
 
-from app.modules.users.entities import UserEntity
-
 
 class DeliveryService:
-
     @staticmethod
     def get_delivery_method(method: DeliveryMethods) -> BaseDeliveryMethod:
-        return {
-            DeliveryMethods.CDEK: CDEKDeliveryMethod
-        }[method]()
+        return {DeliveryMethods.CDEK: CDEKDeliveryMethod}[method]()
 
     @staticmethod
     def get_all_methods():
@@ -35,8 +30,8 @@ class DeliveryService:
         method = self.get_delivery_method(body.method)
         return await method.get_addresses(body)
 
-    async def get_delivery_point(self, code: str, method: DeliveryMethods):
-        method = self.get_delivery_method(method)
-        return await method.get_delivery_point(code)
-
-
+    async def get_order_status(
+        self, order: OrderEntity
+    ) -> tp.Optional[DeliveryStatusesEnum]:
+        method = self.get_delivery_method(DeliveryMethods(order.delivery_method))
+        return await method.get_status(order)

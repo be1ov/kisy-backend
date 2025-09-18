@@ -5,10 +5,20 @@ import httpx
 from app.core.config import settings
 from app.modules.delivery.entities import CountryEntity
 from app.modules.delivery.enums.countries import Countries
+from app.modules.delivery.enums.delivery_statuses import DeliveryStatusesEnum
 from app.modules.delivery.methods.base import BaseDeliveryMethod
-from app.modules.delivery.schemas.create_order import CdekPackageItem, CdekPackage, CdekRecipient
-from app.modules.delivery.schemas.get_cities import ListResponse, DeliveryPointFilter, CityFilter, CityResponse, \
-    DeliveryPointResponse
+from app.modules.delivery.schemas.create_order import (
+    CdekPackageItem,
+    CdekPackage,
+    CdekRecipient,
+)
+from app.modules.delivery.schemas.get_cities import (
+    ListResponse,
+    DeliveryPointFilter,
+    CityFilter,
+    CityResponse,
+    DeliveryPointResponse,
+)
 from app.modules.goods.entities import GoodVariationEntity
 from app.modules.orders.entities import OrderEntity
 from app.modules.orders.schemas.create import CreateOrderSchema
@@ -20,8 +30,9 @@ class CDEKError(ValueError):
 
 
 class CDEKDeliveryMethod(BaseDeliveryMethod):
-    async def prepare_cdek_data(self, order_data: OrderEntity,
-                                order_id: str, current_user: UserEntity):
+    async def prepare_cdek_data(
+        self, order_data: OrderEntity, order_id: str, current_user: UserEntity
+    ):
         package_items = []
         total_weight = 0
 
@@ -29,7 +40,7 @@ class CDEKDeliveryMethod(BaseDeliveryMethod):
             variation = order_detail.variation
             # variation = variations.get(variation_id, None)
             if variation is None:
-                raise CDEKError('Unknown variation id')
+                raise CDEKError("Unknown variation id")
 
             item = CdekPackageItem(
                 ware_key=str(variation.id),
@@ -39,8 +50,8 @@ class CDEKDeliveryMethod(BaseDeliveryMethod):
                 amount=int(order_detail.quantity),
                 payment={
                     "value": variation.latest_price * order_detail.quantity,
-                    "type": "CARD"
-                }
+                    "type": "CARD",
+                },
             )
             package_items.append(item)
             total_weight += int(variation.weight * 1000 * order_detail.quantity)
@@ -52,35 +63,32 @@ class CDEKDeliveryMethod(BaseDeliveryMethod):
             length=1,
             width=1,
             height=1,
-            items=package_items
+            items=package_items,
         )
 
         delivery_point = await self.get_delivery_point(order_data.delivery_point)
 
         recipient = CdekRecipient(
-            name=current_user.full_name,
-            phones=[{"number": current_user.phone}]
+            name=current_user.full_name, phones=[{"number": current_user.phone}]
         )
 
         body = {
-            "type": 1,  # Тип заказа (1 - доставка)
+            "type": 1,
             "number": str(order_id),
-            "tariff_code": 139,  # Пример тарифа
+            "tariff_code": 139,
             "from_location": {
                 "code": 391,
                 "city": "Балашиха",
-                "address": "пр. Ласточкин, вл8, стр.8Б"
+                "address": "пр. Ласточкин, вл8, стр.8Б",
             },
             "to_location": {
-                "code": delivery_point['code'],
-                "city": delivery_point['city'],
-                "address": delivery_point['address']
+                "code": delivery_point["code"],
+                "city": delivery_point["city"],
+                "address": delivery_point["address"],
             },
             "packages": [package.model_dump()],
-            "recipient": recipient.model_dump()
+            "recipient": recipient.model_dump(),
         }
-
-        print(body)
 
         if settings.CDEK_DEBUG:
             base_url = settings.CDEK_TEST_API_URL
@@ -95,15 +103,23 @@ class CDEKDeliveryMethod(BaseDeliveryMethod):
                     f"{base_url}/orders",
                     headers={
                         "Authorization": f"Bearer {token}",
-                        "Accept": "application/json"
+                        "Accept": "application/json",
                     },
-                    json=body
+                    json=body,
                 )
                 response.raise_for_status()
                 data = response.json()
-                print(data)
-                return data
 
+                cdek_entity = data.get("entity", None)
+                if cdek_entity is None:
+                    raise CDEKError("CDEK entity not found in response")
+
+                cdek_uuid = cdek_entity.get("uuid", None)
+                if cdek_uuid is None:
+                    raise CDEKError("CDEK UUID not found in response")
+                order_data.cdek_order_uuid = cdek_uuid
+
+                return data
             except (httpx.HTTPStatusError, KeyError) as e:
                 raise CDEKError(f"Ошибка при создании заказа в СДЕК: {str(e)}")
 
@@ -124,8 +140,8 @@ class CDEKDeliveryMethod(BaseDeliveryMethod):
                     params={"code": code},
                     headers={
                         "Authorization": f"Bearer {token}",
-                        "Accept": "application/json"
-                    }
+                        "Accept": "application/json",
+                    },
                 )
                 response.raise_for_status()
                 data = response.json()
@@ -140,7 +156,7 @@ class CDEKDeliveryMethod(BaseDeliveryMethod):
                 return {
                     "code": pvz.get("location", {}).get("city_code"),
                     "city": pvz.get("location", {}).get("city"),
-                    "address": pvz.get("location", {}).get("address_full")
+                    "address": pvz.get("location", {}).get("address_full"),
                 }
             except (httpx.HTTPStatusError, KeyError) as e:
                 raise CDEKError(f"Ошибка получения ПВЗ СДЕК: {str(e)}")
@@ -150,7 +166,7 @@ class CDEKDeliveryMethod(BaseDeliveryMethod):
         return {
             Countries.RU: CountryEntity(name="Россия", code="RU"),
             Countries.BY: CountryEntity(name="Беларусь", code="BY"),
-            Countries.KZ: CountryEntity(name="Казахстан", code="KZ")
+            Countries.KZ: CountryEntity(name="Казахстан", code="KZ"),
         }
 
     async def get_cdek_auth_token(self):
@@ -173,7 +189,7 @@ class CDEKDeliveryMethod(BaseDeliveryMethod):
             except (httpx.HTTPStatusError, KeyError) as e:
                 raise CDEKError(f"Ошибка авторизации в CDEK API: {str(e)}")
 
-        return token_data['access_token']
+        return token_data["access_token"]
 
     async def get_countries(self):
         """
@@ -201,17 +217,13 @@ class CDEKDeliveryMethod(BaseDeliveryMethod):
         async with httpx.AsyncClient() as client:
             try:
                 response = await client.get(
-                    f"{base_url}/location/cities",
-                    headers=headers,
-                    params=params
+                    f"{base_url}/location/cities", headers=headers, params=params
                 )
                 response.raise_for_status()
                 cities = response.json()
                 return ListResponse[CityResponse](data=cities, count=len(cities))
             except httpx.HTTPStatusError as e:
-                raise CDEKError(
-                    f"CDEK API error: {str(e)}"
-                )
+                raise CDEKError(f"CDEK API error: {str(e)}")
 
     async def get_addresses(self, filters: DeliveryPointFilter):
         """
@@ -232,14 +244,117 @@ class CDEKDeliveryMethod(BaseDeliveryMethod):
         async with httpx.AsyncClient() as client:
             try:
                 response = await client.get(
-                    f"{base_url}/deliverypoints",
-                    headers=headers,
-                    params=params
+                    f"{base_url}/deliverypoints", headers=headers, params=params
                 )
                 response.raise_for_status()
                 points = response.json()
-                return ListResponse[DeliveryPointResponse](data=points, count=len(points))
-            except httpx.HTTPStatusError as e:
-                raise CDEKError(
-                    f"CDEK API error: {str(e)}"
+                return ListResponse[DeliveryPointResponse](
+                    data=points, count=len(points)
                 )
+            except httpx.HTTPStatusError as e:
+                raise CDEKError(f"CDEK API error: {str(e)}")
+
+    async def map_delivery_status(self, status: str) -> DeliveryStatusesEnum:
+        mapping = {
+            # Заказ создан, но требует валидации
+            "ACCEPTED": DeliveryStatusesEnum.CREATED,
+            # Заказ создан и прошел валидации
+            "CREATED": DeliveryStatusesEnum.CREATED,
+            # Принят на склад отправителя
+            "RECEIVED_AT_SHIPMENT_WAREHOUSE": DeliveryStatusesEnum.IN_PROGRESS,
+            # Выдан на отправку в г. отправителе
+            "READY_TO_SHIP_AT_SENDING_OFFICE": DeliveryStatusesEnum.IN_PROGRESS,
+            "READY_FOR_SHIPMENT_IN_TRANSIT_CITY": DeliveryStatusesEnum.IN_PROGRESS,
+            # Готов к отправке в г. отправителе
+            "READY_FOR_SHIPMENT_IN_SENDER_CITY": DeliveryStatusesEnum.IN_PROGRESS,
+            # Возвращен на склад отправителя
+            "RETURNED_TO_SENDER_CITY_WAREHOUSE": DeliveryStatusesEnum.IN_PROGRESS,
+            # Сдан перевозчику в г. отправителе
+            "TAKEN_BY_TRANSPORTER_FROM_SENDER_CITY": DeliveryStatusesEnum.IN_PROGRESS,
+            # Отправлен в г. транзит
+            "SENT_TO_TRANSIT_CITY": DeliveryStatusesEnum.IN_PROGRESS,
+            # Встречен в г. транзите
+            "ACCEPTED_IN_TRANSIT_CITY": DeliveryStatusesEnum.IN_PROGRESS,
+            # Принят на склад транзита
+            "ACCEPTED_AT_TRANSIT_WAREHOUSE": DeliveryStatusesEnum.IN_PROGRESS,
+            # Возвращен на склад транзита
+            "RETURNED_TO_TRANSIT_WAREHOUSE": DeliveryStatusesEnum.IN_PROGRESS,
+            # Выдан на отправку в г. транзите
+            "READY_TO_SHIP_IN_TRANSIT_OFFICE": DeliveryStatusesEnum.IN_PROGRESS,
+            # Сдан перевозчику в г. транзите
+            "TAKEN_BY_TRANSPORTER_FROM_TRANSIT_CITY": DeliveryStatusesEnum.IN_PROGRESS,
+            # Отправлен в г. отправитель
+            "SENT_TO_SENDER_CITY": DeliveryStatusesEnum.IN_PROGRESS,
+            # Отправлен в г. получатель
+            "SENT_TO_RECIPIENT_CITY": DeliveryStatusesEnum.IN_PROGRESS,
+            # Встречен в г. отправителе
+            "ACCEPTED_IN_SENDER_CITY": DeliveryStatusesEnum.IN_PROGRESS,
+            # Встречен в г. получателе
+            "ACCEPTED_IN_RECIPIENT_CITY": DeliveryStatusesEnum.IN_PROGRESS,
+            # Принят на склад доставки
+            "ACCEPTED_AT_RECIPIENT_CITY_WAREHOUSE": DeliveryStatusesEnum.IN_PROGRESS,
+            # Принят на склад до востребования
+            "ACCEPTED_AT_PICK_UP_POINT": DeliveryStatusesEnum.IN_PROGRESS,
+            # Выдан на доставку
+            "TAKEN_BY_COURIER": DeliveryStatusesEnum.IN_PROGRESS,
+            # Возвращен на склад доставки
+            "RETURNED_TO_RECIPIENT_CITY_WAREHOUSE": DeliveryStatusesEnum.IN_PROGRESS,
+            # Вручен
+            "DELIVERED": DeliveryStatusesEnum.DELIVERED,
+            # Не вручен
+            "NOT_DELIVERED": DeliveryStatusesEnum.CANCELLED,
+            # Некорректный заказ
+            "INVALID": DeliveryStatusesEnum.CANCELLED,
+            # Таможенное оформление в стране отправления
+            "IN_CUSTOMS_INTERNATIONAL": DeliveryStatusesEnum.IN_PROGRESS,
+            # Отправлено в страну назначения
+            "SHIPPED_TO_DESTINATION": DeliveryStatusesEnum.SHIPPED,
+            # Передано транзитному перевозчику
+            "PASSED_TO_TRANSIT_CARRIER": DeliveryStatusesEnum.SHIPPED,
+            # Таможенное оформление в стране назначения
+            "IN_CUSTOMS_LOCAL": DeliveryStatusesEnum.IN_PROGRESS,
+            # Таможенное оформление завершено
+            "CUSTOMS_COMPLETE": DeliveryStatusesEnum.IN_PROGRESS,
+            # Заложен в постамат
+            "POSTOMAT_POSTED": DeliveryStatusesEnum.IN_PROGRESS,
+            # Изъят из постамата курьером
+            "POSTOMAT_SEIZED": DeliveryStatusesEnum.CANCELLED,
+            # Изъят из постамата клиентом
+            "POSTOMAT_RECEIVED": DeliveryStatusesEnum.DELIVERED,
+            # Удален/отменен
+            "REMOVED": DeliveryStatusesEnum.CANCELLED,
+        }
+
+        # По умолчанию - ожидает оплаты, если статус неизвестен
+        return mapping.get(status, DeliveryStatusesEnum.WAITING_FOR_PAYMENT)
+
+    async def get_status(self, order: OrderEntity) -> DeliveryStatusesEnum:
+        if not order.cdek_order_uuid:
+            raise CDEKError("CDEK order UUID is not set for this order")
+
+        token = await self.get_cdek_auth_token()
+
+        if settings.CDEK_DEBUG:
+            base_url = settings.CDEK_TEST_API_URL
+        else:
+            base_url = settings.CDEK_API_URL
+
+        async with httpx.AsyncClient() as client:
+            try:
+                response = await client.get(
+                    f"{base_url}/orders/{order.cdek_order_uuid}",
+                    headers={
+                        "Authorization": f"Bearer {token}",
+                        "Accept": "application/json",
+                    },
+                )
+                response.raise_for_status()
+                data = response.json()
+
+                status = data.get("state", None)
+                if status is None:
+                    raise CDEKError("CDEK order status not found in response")
+
+                return await self.map_delivery_status(status)
+            except (httpx.HTTPStatusError, KeyError) as e:
+                raise CDEKError(f"Ошибка получения статуса заказа в СДЕК: {str(e)}")
