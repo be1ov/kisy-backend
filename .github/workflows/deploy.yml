@@ -54,7 +54,7 @@ jobs:
             # Clone if not exists, else update
             if [ ! -d "kisy_backend/.git" ]; then
               echo "Cloning repo..."
-              git clone https://github.com/${GITHUB_REPOSITORY}.git kisy_backend
+              git clone https://github.com/${{ github.repository }}.git kisy_backend
             fi
 
             cd kisy_backend
