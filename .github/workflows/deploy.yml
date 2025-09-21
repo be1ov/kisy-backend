@@ -37,8 +37,30 @@ jobs:
           username: ${{ secrets.SSH_USER }}
           password: ${{ secrets.SSH_PASSWORD }}
           script: |
-            cd /home/kisy/kisy_backend
-            git stash
+            set -e
+
+            # Ensure base deps
+            if ! command -v git >/dev/null 2>&1; then
+              echo "Installing Git..."
+              sudo apt-get update -y
+              sudo apt-get install -y git
+            fi
+
+            # Make sure project dir exists
+            mkdir -p /root/kisy
+
+            cd /root/kisy
+
+            # Clone if not exists, else update
+            if [ ! -d "kisy_backend/.git" ]; then
+              echo "Cloning repo..."
+              git clone https://github.com/${GITHUB_REPOSITORY}.git kisy_backend
+            fi
+
+            cd kisy_backend
+            git fetch --all
+            git reset --hard origin/main
+
             chmod +x ./deploy.sh
             ./deploy.sh
 
