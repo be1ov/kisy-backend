@@ -1,5 +1,5 @@
 import uuid
-import datetime
+from datetime import datetime
 
 from sqlalchemy import String, ForeignKey, Boolean, Float, DateTime, Enum
 from sqlalchemy.orm import Mapped, mapped_column, relationship
@@ -9,18 +9,20 @@ from app.modules.goods.enums.vat_rates import VATRate
 
 
 class GoodEntity(Base):
-    __tablename__ = 'goods'
+    __tablename__ = "goods"
 
-    id: Mapped[str] = mapped_column(String, primary_key=True, default=lambda: str(uuid.uuid4()))
+    id: Mapped[str] = mapped_column(
+        String, primary_key=True, default=lambda: str(uuid.uuid4())
+    )
     title: Mapped[str] = mapped_column(String)
     description: Mapped[str] = mapped_column(String)
 
-    vat_rate: Mapped[VATRate] = mapped_column(Enum(VATRate, name="vat_rate", native_enum=False), default=VATRate.VAT_5)
+    vat_rate: Mapped[VATRate] = mapped_column(
+        Enum(VATRate, name="vat_rate", native_enum=False), default=VATRate.VAT_5
+    )
 
     variations: Mapped[list["GoodVariationEntity"]] = relationship(
-        back_populates="good",
-        cascade="all",
-        passive_deletes=True
+        back_populates="good", cascade="all", passive_deletes=True
     )
 
     def __str__(self):
@@ -28,16 +30,20 @@ class GoodEntity(Base):
 
 
 class GoodVariationEntity(Base):
-    __tablename__ = 'goods_variations'
+    __tablename__ = "goods_variations"
 
-    id: Mapped[str] = mapped_column(String, primary_key=True, default=lambda: str(uuid.uuid4()))
-    good_id: Mapped[str] = mapped_column(ForeignKey('goods.id', ondelete="RESTRICT"))
+    id: Mapped[str] = mapped_column(
+        String, primary_key=True, default=lambda: str(uuid.uuid4())
+    )
+    good_id: Mapped[str] = mapped_column(ForeignKey("goods.id", ondelete="RESTRICT"))
 
     title: Mapped[str] = mapped_column(String)
     description: Mapped[str] = mapped_column(String)
 
-    latest_price: Mapped[float] = mapped_column(Float, nullable=True, default=None)
-    latest_price_date: Mapped[datetime] = mapped_column(DateTime, nullable=True, default=None)
+    latest_price: Mapped[float] = mapped_column(Float, nullable=True, default=0)
+    latest_price_date: Mapped[datetime] = mapped_column(
+        DateTime, nullable=True, default=lambda: datetime.now()
+    )
 
     weight: Mapped[float] = mapped_column(Float, nullable=True, default=0)
     length: Mapped[float] = mapped_column(Float, nullable=True, default=0)
@@ -61,12 +67,15 @@ class GoodVariationEntity(Base):
         return f"{self.good.title} / {self.title}"
 
 
-
 class GoodVariationPhotoEntity(Base):
-    __tablename__ = 'goods_variation_photos'
+    __tablename__ = "goods_variation_photos"
 
-    id: Mapped[str] = mapped_column(String, primary_key=True, default=lambda: str(uuid.uuid4()))
-    variation_id: Mapped[str] = mapped_column(ForeignKey('goods_variations.id', ondelete="CASCADE"))
+    id: Mapped[str] = mapped_column(
+        String, primary_key=True, default=lambda: str(uuid.uuid4())
+    )
+    variation_id: Mapped[str] = mapped_column(
+        ForeignKey("goods_variations.id", ondelete="CASCADE")
+    )
     url: Mapped[str] = mapped_column(String)
     is_main: Mapped[bool] = mapped_column(Boolean)
 

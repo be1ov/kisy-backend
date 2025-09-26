@@ -51,3 +51,14 @@ class GoodsService:
             self.db.add(variation)
 
         return good
+    
+    async def create_variation(self, good_id: str, data: CreateGoodSchema):
+        async with self.db.begin():
+            variation = GoodVariationEntity(
+                good_id=good_id,
+                title=data.title,
+                description=data.description,
+            )
+            self.db.add(variation)
+
+        return variation
