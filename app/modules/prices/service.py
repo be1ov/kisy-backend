@@ -14,21 +14,27 @@ class InvalidPriceError(ValueError):
 
 
 class PricingService:
-    def __init__(self, db: AsyncSession = Depends(get_session), goods_service: GoodsService = Depends()):
+    def __init__(
+        self,
+        db: AsyncSession = Depends(get_session),
+        goods_service: GoodsService = Depends(),
+    ):
         self.db = db
         self.goods_service = goods_service
 
     async def set_price(self, data: SetPriceSchema):
         async with self.db.begin():
-            now = datetime.now(timezone.utc)
+            now = datetime.now()
 
-            good_variation = await self.goods_service.get_variation_by_id(data.variation_id)
+            good_variation = await self.goods_service.get_variation_by_id(
+                data.variation_id
+            )
             good_variation.latest_price = data.price
             good_variation.latest_price_date = now
             self.db.add(good_variation)
 
-            self.db.add(GoodVariationPriceEntity(
-                good_variation=good_variation,
-                price=data.price,
-                date=now
-            ))
+            self.db.add(
+                GoodVariationPriceEntity(
+                    good_variation=good_variation, price=data.price, date=now
+                )
+            )
