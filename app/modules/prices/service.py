@@ -1,6 +1,7 @@
 from datetime import datetime, timezone
 
 from fastapi import Depends
+from sqlalchemy import select
 from sqlalchemy.ext.asyncio import AsyncSession
 
 from app.core.db.session import get_session
@@ -43,7 +44,7 @@ class PricingService:
         self, variation_id: str
     ) -> list[GoodVariationPriceEntity]:
         result = await self.db.execute(
-            GoodVariationPriceEntity.select()
+            select(GoodVariationPriceEntity)
             .where(GoodVariationPriceEntity.good_variation_id == variation_id)
             .order_by(GoodVariationPriceEntity.date.desc())
         )
