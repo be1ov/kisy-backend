@@ -38,3 +38,13 @@ class PricingService:
                     good_variation=good_variation, price=data.price, date=now
                 )
             )
+
+    async def get_price_history(
+        self, variation_id: int
+    ) -> list[GoodVariationPriceEntity]:
+        result = await self.db.execute(
+            GoodVariationPriceEntity.select()
+            .where(GoodVariationPriceEntity.good_variation_id == variation_id)
+            .order_by(GoodVariationPriceEntity.date.desc())
+        )
+        return list(result.scalars().all())
