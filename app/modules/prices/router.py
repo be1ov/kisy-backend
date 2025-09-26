@@ -15,7 +15,7 @@ async def set_price(data: SetPriceSchema, service: PricingService = Depends()):
 
 
 @router.get("/history/{variation_id}")
-async def get_price_history(variation_id: int, service: PricingService = Depends()):
+async def get_price_history(variation_id: str, service: PricingService = Depends()):
     history = await service.get_price_history(variation_id)
     return {
         "status": "success",

@@ -40,7 +40,7 @@ class PricingService:
             )
 
     async def get_price_history(
-        self, variation_id: int
+        self, variation_id: str
     ) -> list[GoodVariationPriceEntity]:
         result = await self.db.execute(
             GoodVariationPriceEntity.select()
