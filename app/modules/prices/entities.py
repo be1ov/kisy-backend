@@ -9,11 +9,17 @@ from app.modules.goods.entities import GoodVariationEntity
 
 
 class GoodVariationPriceEntity(Base):
-    __tablename__ = 'good_variation_price'
+    __tablename__ = "good_variation_price"
 
-    id: Mapped[str] = mapped_column(String, primary_key=True, default=lambda: str(uuid.uuid4()))
+    id: Mapped[str] = mapped_column(
+        String, primary_key=True, default=lambda: str(uuid.uuid4())
+    )
     date: Mapped[datetime] = mapped_column(DateTime)
-    good_variation_id: Mapped[str] = mapped_column(ForeignKey('goods_variations.id'), nullable=False)
+    good_variation_id: Mapped[str] = mapped_column(
+        ForeignKey("goods_variations.id", ondelete="CASCADE"), nullable=False
+    )
 
-    good_variation: Mapped["GoodVariationEntity"] = relationship(foreign_keys=[good_variation_id])
+    good_variation: Mapped["GoodVariationEntity"] = relationship(
+        foreign_keys=[good_variation_id], cascade="all, delete-orphan"
+    )
     price: Mapped[float] = mapped_column(Float, default=0)

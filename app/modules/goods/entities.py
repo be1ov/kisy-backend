@@ -79,4 +79,6 @@ class GoodVariationPhotoEntity(Base):
     url: Mapped[str] = mapped_column(String)
     is_main: Mapped[bool] = mapped_column(Boolean)
 
-    variation: Mapped["GoodVariationEntity"] = relationship(back_populates="photos")
+    variation: Mapped["GoodVariationEntity"] = relationship(
+        back_populates="photos", cascade="all, delete-orphan"
+    )
