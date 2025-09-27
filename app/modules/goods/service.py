@@ -118,3 +118,29 @@ class GoodsService:
             self.db.add(variation)
 
         return variation
+
+    async def delete_photo(self, variation_id: str, id: str) -> GoodVariationEntity:
+        async with self.db.begin():
+            stmt = (
+                select(GoodVariationEntity)
+                .where(GoodVariationEntity.id == variation_id)
+                .options(selectinload(GoodVariationEntity.photos))
+            )
+            result = await self.db.execute(stmt)
+            variation = result.scalars().one_or_none()
+            if variation is None:
+                raise ValueError("Variation not found")
+
+            photo = next((p for p in variation.photos if p.id == id), None)
+            if photo is None:
+                raise ValueError("Photo not found")
+
+            # delete file
+            try:
+                os.remove(f".{photo.url}")
+            except FileNotFoundError:
+                pass
+
+            await self.db.delete(photo)
+
+        return variation

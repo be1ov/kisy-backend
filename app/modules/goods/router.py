@@ -63,3 +63,15 @@ async def upload_variation_photo(
             detail="Good variation with provided id can not be found", status_code=404
         )
     return variation
+
+@router.delete("/variation/{variation_id}/delete-photo")
+async def delete_variation_photo(
+    variation_id: str, id: str, service: GoodsService = Depends()
+):
+    try:
+        variation = await service.delete_photo(variation_id, id)
+    except ValueError:
+        raise HTTPException(
+            detail="Good variation with provided id can not be found", status_code=404
+        )
+    return variation
