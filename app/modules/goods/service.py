@@ -1,12 +1,18 @@
 from typing import Sequence
+import uuid
 
+import aiofiles
 from fastapi import Depends
 from sqlalchemy import select
 from sqlalchemy.ext.asyncio import AsyncSession
 from sqlalchemy.orm import selectinload
 
 from app.core.db.session import get_session
-from app.modules.goods.entities import GoodEntity, GoodVariationEntity
+from app.modules.goods.entities import (
+    GoodEntity,
+    GoodVariationEntity,
+    GoodVariationPhotoEntity,
+)
 from app.modules.goods.schemas.create import CreateGoodSchema
 
 
@@ -76,6 +82,31 @@ class GoodsService:
                 title=data.title,
                 description=data.description,
             )
+            self.db.add(variation)
+
+        return variation
+
+    async def upload_photos(
+        self, variation_id: str, file: bytes
+    ) -> GoodVariationEntity:
+        async with self.db.begin():
+            stmt = (
+                select(GoodVariationEntity)
+                .where(GoodVariationEntity.id == variation_id)
+                .options(selectinload(GoodVariationEntity.photos))
+            )
+            result = await self.db.execute(stmt)
+            variation = result.scalars().one_or_none()
+            if variation is None:
+                raise ValueError("Variation not found")
+
+            url = f"/static/goods/{variation_id}/{uuid.uuid4()}.jpg"
+            async with aiofiles.open(f".{url}", "wb") as out_file:
+                await out_file.write(file)
+
+            photo = GoodVariationPhotoEntity(url=url, is_main=False)
+            variation.photos.append(photo)
+
             self.db.add(variation)
 
         return variation

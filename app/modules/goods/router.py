@@ -1,4 +1,4 @@
-from fastapi import APIRouter, Depends, HTTPException
+from fastapi import APIRouter, Depends, File, HTTPException, UploadFile
 from fastapi.params import Query
 
 from app.modules.goods.schemas.create import CreateGoodSchema
@@ -41,6 +41,25 @@ async def get_variation_by_id(variation_id: str, service: GoodsService = Depends
         )
     return variation
 
+
 @router.post("/variation/{variation_id}")
-async def create_variation(variation_id: str, data: CreateGoodSchema, service: GoodsService = Depends()):
+async def create_variation(
+    variation_id: str, data: CreateGoodSchema, service: GoodsService = Depends()
+):
     return await service.create_variation(variation_id, data)
+
+
+@router.post("/variation/{variation_id}/upload-photo")
+async def upload_variation_photo(
+    variation_id: str, file: UploadFile = File(...), service: GoodsService = Depends()
+):
+    if file.content_type not in ["image/jpeg", "image/png"]:
+        raise HTTPException(detail="File must be an image", status_code=400)
+
+    try:
+        variation = await service.upload_photos(variation_id, await file.read())
+    except ValueError:
+        raise HTTPException(
+            detail="Good variation with provided id can not be found", status_code=404
+        )
+    return variation
