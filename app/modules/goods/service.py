@@ -1,3 +1,4 @@
+import os
 from typing import Sequence
 import uuid
 
@@ -105,9 +106,9 @@ class GoodsService:
             if not content_type or content_type not in ["image/jpeg", "image/png"]:
                 raise ValueError("File must be an image")
 
-            extension = content_type.split("/")[-1] if "/" in content_type else "jpg"
+            os.makedirs(f"./static/goods/{variation_id}", exist_ok=True)
 
-            url = f"/static/goods/{variation_id}/{uuid.uuid4()}_{file.filename}.{extension}"
+            url = f"/static/goods/{variation_id}/{uuid.uuid4()}_{file.filename}"
             async with aiofiles.open(f".{url}", "wb") as out_file:
                 await out_file.write(file_content)
 
