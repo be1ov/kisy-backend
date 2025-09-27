@@ -52,6 +52,16 @@ async def get_variation_by_id(variation_id: str, service: GoodsService = Depends
         )
     return variation
 
+@router.delete("/variation/{variation_id}")
+async def delete_variation(variation_id: str, service: GoodsService = Depends()):
+    try:
+        await service.delete_variation(variation_id)
+    except ValueError:
+        raise HTTPException(
+            detail="Good variation with provided id can not be found", status_code=404
+        )
+    return {"detail": "Good variation deleted successfully"}
+
 
 @router.post("/variation/{good_id}", description="Create variation")
 async def create_variation(
