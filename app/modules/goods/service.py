@@ -15,22 +15,39 @@ class GoodsService:
         self.db = db
 
     async def get_by_id(self, _id: str) -> GoodEntity:
-        stmt = select(GoodEntity).where(GoodEntity.id == _id).options(
-            selectinload(GoodEntity.variations)
-            .selectinload(GoodVariationEntity.photos)
+        stmt = (
+            select(GoodEntity)
+            .where(GoodEntity.id == _id)
+            .options(
+                selectinload(GoodEntity.variations).selectinload(
+                    GoodVariationEntity.photos
+                )
+            )
         )
         result = await self.db.execute(stmt)
         return result.scalar()
 
     async def get_variation_by_id(self, _id: str) -> GoodVariationEntity:
-        stmt = select(GoodVariationEntity).where(GoodVariationEntity.id == _id)
+        stmt = (
+            select(GoodVariationEntity)
+            .options(selectinload(GoodVariationEntity.photos))
+            .where(GoodVariationEntity.id == _id)
+        )
         result = await self.db.execute(stmt)
         return result.scalar()
 
-    async def get_goods_paginated(self, page: int = 1, size: int = 10) -> Sequence[GoodEntity]:
-        stmt = select(GoodEntity).offset((page - 1) * size).limit(size).options(
-            selectinload(GoodEntity.variations)
-            .selectinload(GoodVariationEntity.photos)
+    async def get_goods_paginated(
+        self, page: int = 1, size: int = 10
+    ) -> Sequence[GoodEntity]:
+        stmt = (
+            select(GoodEntity)
+            .offset((page - 1) * size)
+            .limit(size)
+            .options(
+                selectinload(GoodEntity.variations).selectinload(
+                    GoodVariationEntity.photos
+                )
+            )
         )
         result = await self.db.execute(stmt)
         return result.scalars().all()
@@ -51,7 +68,7 @@ class GoodsService:
             self.db.add(variation)
 
         return good
-    
+
     async def create_variation(self, good_id: str, data: CreateGoodSchema):
         async with self.db.begin():
             variation = GoodVariationEntity(
