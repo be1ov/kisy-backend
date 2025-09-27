@@ -2,7 +2,7 @@ from typing import Sequence
 import uuid
 
 import aiofiles
-from fastapi import Depends
+from fastapi import Depends, UploadFile
 from sqlalchemy import select
 from sqlalchemy.ext.asyncio import AsyncSession
 from sqlalchemy.orm import selectinload
@@ -87,7 +87,7 @@ class GoodsService:
         return variation
 
     async def upload_photos(
-        self, variation_id: str, file: bytes
+        self, variation_id: str, file: UploadFile
     ) -> GoodVariationEntity:
         async with self.db.begin():
             stmt = (
@@ -100,9 +100,16 @@ class GoodsService:
             if variation is None:
                 raise ValueError("Variation not found")
 
-            url = f"/static/goods/{variation_id}/{uuid.uuid4()}.jpg"
+            file_content = await file.read()
+            content_type = file.content_type
+            if not content_type or content_type not in ["image/jpeg", "image/png"]:
+                raise ValueError("File must be an image")
+
+            extension = content_type.split("/")[-1] if "/" in content_type else "jpg"
+
+            url = f"/static/goods/{variation_id}/{uuid.uuid4()}_{file.filename}.{extension}"
             async with aiofiles.open(f".{url}", "wb") as out_file:
-                await out_file.write(file)
+                await out_file.write(file_content)
 
             photo = GoodVariationPhotoEntity(url=url, is_main=False)
             variation.photos.append(photo)

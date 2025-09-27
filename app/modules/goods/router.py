@@ -57,7 +57,7 @@ async def upload_variation_photo(
         raise HTTPException(detail="File must be an image", status_code=400)
 
     try:
-        variation = await service.upload_photos(variation_id, await file.read())
+        variation = await service.upload_photos(variation_id, file)
     except ValueError:
         raise HTTPException(
             detail="Good variation with provided id can not be found", status_code=404
