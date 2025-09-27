@@ -15,6 +15,7 @@ from app.modules.goods.entities import (
     GoodVariationPhotoEntity,
 )
 from app.modules.goods.schemas.create import CreateGoodSchema
+from app.modules.goods.schemas.create_variation_schema import CreateVariationSchema
 
 
 class GoodsService:
@@ -83,6 +84,27 @@ class GoodsService:
                 title=data.title,
                 description=data.description,
             )
+            self.db.add(variation)
+
+        return variation
+
+    async def update_variation(self, variation_id: str, data: CreateVariationSchema):
+        async with self.db.begin():
+            stmt = select(GoodVariationEntity).where(
+                GoodVariationEntity.id == variation_id
+            )
+            result = await self.db.execute(stmt)
+            variation = result.scalars().one_or_none()
+            if variation is None:
+                raise ValueError("Variation not found")
+
+            variation.title = data.title
+            variation.description = data.description
+            variation.length = data.length
+            variation.width = data.width
+            variation.height = data.height
+            variation.weight = data.weight
+
             self.db.add(variation)
 
         return variation
