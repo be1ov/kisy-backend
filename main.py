@@ -33,6 +33,8 @@ from app.modules.lk import router as lk
 
 from app.modules.users.entities import UserEntity
 
+from starlette.middleware.cors import CORSMiddleware
+
 _ = [
     UserEntity,
     GoodEntity,
@@ -48,6 +50,15 @@ app = FastAPI(
     title="KISY Shop Backend",
     version="1.0.0",
     contact={"Name": "Alex", "Telegram": "t.me/be1ov_v"},
+)
+
+# corses
+app.add_middleware(
+    CORSMiddleware,
+    allow_origins=["*"],
+    allow_credentials=True,
+    allow_methods=["*"],
+    allow_headers=["*"],
 )
 
 app.mount("/api/static", StaticFiles(directory="static"), name="static")
