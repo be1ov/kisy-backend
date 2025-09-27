@@ -64,7 +64,8 @@ async def upload_variation_photo(
         )
     return variation
 
-@router.delete("/variation/{variation_id}/delete-photo")
+
+@router.delete("/variation/{variation_id}/delete-photo/{id}")
 async def delete_variation_photo(
     variation_id: str, id: str, service: GoodsService = Depends()
 ):
