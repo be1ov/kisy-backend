@@ -32,6 +32,16 @@ async def get_by_id(good_id: str, service: GoodsService = Depends()):
 async def create(data: CreateGoodSchema, service: GoodsService = Depends()):
     return await service.create(data)
 
+@router.delete("/{good_id}")
+async def delete(good_id: str, service: GoodsService = Depends()):
+    try:
+        await service.delete(good_id)
+    except ValueError:
+        raise HTTPException(
+            detail="Good with provided id can not be found", status_code=404
+        )
+    return {"detail": "Good deleted successfully"}
+
 
 @router.get("/variation/{variation_id}")
 async def get_variation_by_id(variation_id: str, service: GoodsService = Depends()):

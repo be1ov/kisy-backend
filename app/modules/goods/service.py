@@ -77,6 +77,15 @@ class GoodsService:
 
         return good
 
+    async def delete(self, good_id: str):
+        async with self.db.begin():
+            stmt = select(GoodEntity).where(GoodEntity.id == good_id)
+            result = await self.db.execute(stmt)
+            good = result.scalars().one_or_none()
+            if good is None:
+                raise ValueError("Good not found")
+            await self.db.delete(good)
+
     async def create_variation(self, good_id: str, data: CreateGoodSchema):
         async with self.db.begin():
             variation = GoodVariationEntity(
