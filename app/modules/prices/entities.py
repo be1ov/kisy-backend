@@ -20,6 +20,6 @@ class GoodVariationPriceEntity(Base):
     )
 
     good_variation: Mapped["GoodVariationEntity"] = relationship(
-        foreign_keys=[good_variation_id], cascade="all, delete-orphan"
+        foreign_keys=[good_variation_id]
     )
     price: Mapped[float] = mapped_column(Float, default=0)
