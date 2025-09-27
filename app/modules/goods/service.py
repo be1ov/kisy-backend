@@ -34,7 +34,7 @@ class GoodsService:
             .where(GoodVariationEntity.id == _id)
         )
         result = await self.db.execute(stmt)
-        return result.scalar()
+        return result.scalars().first()
 
     async def get_goods_paginated(
         self, page: int = 1, size: int = 10
