@@ -81,5 +81,5 @@ class CartService:
             delete(GoodsInCart)
             .where(GoodsInCart.user == user)
         )
-        await session.execute(stmt)
-        await session.commit()
+        await self.db.execute(stmt)
+        await self.db.commit()
