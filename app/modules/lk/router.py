@@ -14,4 +14,5 @@ router = APIRouter()
 async def lk_root(
     service: LKService = Depends(), user: UserEntity = Depends(get_current_user)
 ) -> LKDataResponseSchema:
-    return await service.get_info(user)
+    response = await service.get_info(user)
+    return response

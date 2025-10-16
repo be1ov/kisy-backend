@@ -12,6 +12,7 @@ from app.modules.orders.schemas.order_schema import OrderDetailsSchema, OrderSch
 from app.modules.payments.enums.currencies import Currencies
 from app.modules.users.entities import UserEntity
 from app.modules.delivery.enums.delivery_methods import DeliveryMethods
+from app.utils.date import format_date
 
 if tp.TYPE_CHECKING:
     from app.modules.payments.entities import PaymentEntity
@@ -49,7 +50,7 @@ class OrderEntity(Base):
 
     @property
     def description(self) -> str:
-        return f"Заказ #{self.id} от {self.created_at}"
+        return f"Заказ #{self.id} от {format_date(self.created_at)}"
 
     details: Mapped[list["OrderDetailsEntity"]] = relationship(
         back_populates="order", cascade="all", passive_deletes=True
@@ -66,8 +67,9 @@ class OrderEntity(Base):
             delivery_method=self.delivery_method,
             created_at=self.created_at.isoformat(),
             status=None,
-            details=[detail.to_schema().model_dump() for detail in self.details],
+            details=[detail.to_schema() for detail in self.details],
             amount=self.amount,
+            track_number=self.cdek_order_uuid
         )
 
 
@@ -94,7 +96,7 @@ class OrderDetailsEntity(Base):
 
     def to_schema(self) -> OrderDetailsSchema:
         return OrderDetailsSchema(
-            variation=self.variation.__dict__,
+            variation=self.variation.to_schema(),
             quantity=self.quantity,
             price=self.price,
         )

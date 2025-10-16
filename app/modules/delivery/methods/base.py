@@ -6,6 +6,7 @@ from app.modules.delivery.schemas.get_cities import CityFilter, DeliveryPointFil
 from app.modules.goods.entities import GoodVariationEntity
 from app.modules.orders.entities import OrderEntity
 from app.modules.orders.schemas.create import CreateOrderSchema
+from app.modules.orders.schemas.order_schema import OrderSchema
 from app.modules.users.entities import UserEntity
 
 
@@ -26,7 +27,7 @@ class BaseDeliveryMethod:
     async def get_delivery_point(self, code: str):
         pass
 
-    @abc.abstractmethod
+    @abc.abstractmethod # todo: refactor
     async def prepare_cdek_data(
         self, order_data: CreateOrderSchema, order_id: str, current_user: UserEntity
     ):
@@ -37,5 +38,9 @@ class BaseDeliveryMethod:
         pass
 
     @abc.abstractmethod
-    async def get_status(self, order: OrderEntity) -> tp.Optional[DeliveryStatusesEnum]:
+    async def get_status(self, order: OrderSchema) -> tp.Optional[DeliveryStatusesEnum]:
+        pass
+
+    @abc.abstractmethod
+    async def fill_schema(self, schema: OrderSchema) -> OrderSchema:
         pass

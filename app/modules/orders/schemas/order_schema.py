@@ -1,9 +1,10 @@
 import typing as tp
 from pydantic import BaseModel
+from app.modules.goods.schemas.good_variation_schema import GoodVariationSchema
 
 
 class OrderDetailsSchema(BaseModel):
-    variation: tp.Dict[str, tp.Any]
+    variation: GoodVariationSchema
     quantity: int
     price: float
 
@@ -16,5 +17,6 @@ class OrderSchema(BaseModel):
     delivery_method: str
     created_at: str
     status: tp.Optional[str] = None
-    details: tp.Optional[tp.List[tp.Dict[str, tp.Any]]] = []
+    details: tp.List[OrderDetailsSchema] = []
     amount: float
+    track_number: tp.Optional[str]

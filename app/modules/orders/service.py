@@ -14,6 +14,7 @@ from app.modules.delivery.enums.delivery_statuses import DeliveryStatusesEnum
 from app.modules.delivery.service import DeliveryService
 from app.modules.goods.entities import GoodVariationEntity
 from app.modules.orders.entities import OrderEntity, OrderDetailsEntity
+from app.modules.orders.schemas.order_schema import OrderSchema
 from app.modules.orders.schemas.create import CreateOrderSchema
 from app.modules.users.entities import UserEntity
 from app.modules.cart.service import CartService
@@ -106,9 +107,9 @@ class OrderService:
             .options(
                 selectinload(OrderEntity.user),
                 selectinload(OrderEntity.payments),
-                selectinload(OrderEntity.details).selectinload(
-                    OrderDetailsEntity.variation
-                ),
+                selectinload(OrderEntity.details)
+                .selectinload(OrderDetailsEntity.variation)
+                .selectinload(GoodVariationEntity.photos),
             )
             .where(OrderEntity.id == order_id)
         )
@@ -123,19 +124,26 @@ class OrderService:
         status = await self.delivery_service.get_order_status(order)
         return status if status else None
 
-    async def get_orders_by_user(self, user: UserEntity) -> tp.List[OrderEntity]:
+    async def get_orders_by_user(self, user: UserEntity) -> tp.List[OrderSchema]:
         stmt = (
             select(OrderEntity)
             .options(
                 selectinload(OrderEntity.user),
                 selectinload(OrderEntity.payments),
-                selectinload(OrderEntity.details).selectinload(
-                    OrderDetailsEntity.variation
-                ),
+                selectinload(OrderEntity.details)
+                .selectinload(OrderDetailsEntity.variation)
+                .selectinload(GoodVariationEntity.photos),
             )
             .where(OrderEntity.user_id == user.id)
             .order_by(OrderEntity.created_at.desc())
         )
         result = await self.db.execute(stmt)
         orders = result.scalars().all()
-        return list(orders)
+
+        schemas = [o.to_schema() for o in orders]
+        for order_schema in schemas:
+            order_schema.status = await self.delivery_service.get_order_status(
+                order_schema
+            )
+
+        return schemas

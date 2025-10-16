@@ -20,5 +20,5 @@ class LKService:
     async def get_info(self, user: UserEntity) -> LKDataResponseSchema:
         orders = await self.orders_service.get_orders_by_user(user)
         return LKDataResponseSchema(
-            user=user.to_schema(), orders=[order.to_schema() for order in orders]
+            user=user.to_schema(), orders=orders
         )

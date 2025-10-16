@@ -6,7 +6,7 @@ from sqlalchemy.orm import Mapped, mapped_column, relationship
 
 from app.core.db.session import Base
 from app.modules.goods.enums.vat_rates import VATRate
-
+from app.modules.goods.schemas.good_variation_schema import GoodVariationSchema
 
 class GoodEntity(Base):
     __tablename__ = "goods"
@@ -24,6 +24,8 @@ class GoodEntity(Base):
     variations: Mapped[list["GoodVariationEntity"]] = relationship(
         back_populates="good", cascade="all", passive_deletes=True
     )
+
+    show_in_catalog: Mapped[bool] = mapped_column(Boolean, nullable=True, default=True)
 
     def __str__(self):
         return self.title
@@ -55,7 +57,6 @@ class GoodVariationEntity(Base):
         back_populates="variation",
         cascade="all, delete-orphan",
     )
-
     def __str__(self):
         return self.title
 
@@ -65,6 +66,23 @@ class GoodVariationEntity(Base):
             return self.title
 
         return f"{self.good.title} / {self.title}"
+
+    def to_schema(self) -> GoodVariationSchema:
+        return GoodVariationSchema(
+            id=self.id,
+            good_id=self.good_id,
+            title=self.title,
+            description=self.description,
+            latest_price=self.latest_price,
+            latest_price_date=self.latest_price_date,
+            weight=self.weight,
+            length=self.length,
+            width=self.width,
+            height=self.height,
+            photos=[{
+                "url": photo.url
+            } for photo in self.photos]
+        )
 
 
 class GoodVariationPhotoEntity(Base):
