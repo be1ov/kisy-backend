@@ -16,3 +16,5 @@ class GoodVariationSchema(BaseModel):
     length: float = Field(...)
     width: float = Field(...)
     height: float = Field(...)
+
+    photos: tp.List = []

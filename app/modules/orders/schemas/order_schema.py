@@ -19,3 +19,4 @@ class OrderSchema(BaseModel):
     status: tp.Optional[str] = None
     details: tp.List[OrderDetailsSchema] = []
     amount: float
+    track_number: tp.Optional[str]

@@ -8,6 +8,8 @@ from app.modules.orders.entities import OrderEntity
 
 import typing as tp
 
+from app.modules.orders.schemas.order_schema import OrderSchema
+
 
 class DeliveryService:
     @staticmethod
@@ -31,7 +33,7 @@ class DeliveryService:
         return await method.get_addresses(body)
 
     async def get_order_status(
-        self, order: OrderEntity
+        self, order: OrderSchema
     ) -> tp.Optional[DeliveryStatusesEnum]:
         method = self.get_delivery_method(DeliveryMethods(order.delivery_method))
         return await method.get_status(order)

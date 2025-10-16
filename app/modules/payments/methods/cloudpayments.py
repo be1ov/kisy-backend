@@ -13,11 +13,27 @@ class LinkException(ValueError):
 
 class CloudPaymentsPaymentMethod(BasePaymentMethod):
     async def process_payment(self, body: tp.Any) -> str:
-        print(body)
         return body["InvoiceId"]
 
     async def get_payment_link(self, order: OrderEntity, payment_id: str = None) -> str:
-        print('test test TEST1')
+        items = [
+            {
+                "label": item.variation.title,
+                "quantity": item.quantity,
+                "price": item.price,
+                "vat": 5,
+                "amount": item.quantity * item.price
+            } for item in order.details
+        ]
+        items.append(
+            {
+                "label": "Доставка",
+                "quantity": "1",
+                "price": 350,
+                "vat": 5,
+                "amount": 350
+            }
+        )
 
         payload = {
             "Amount": order.amount + 350,
@@ -31,23 +47,13 @@ class CloudPaymentsPaymentMethod(BasePaymentMethod):
                 "PaymentId": payment_id,
                 "cloudpayments": {
                     "CustomerReceipt": {
-                        "items": [
-                            {
-                                "label": item.variation.title,
-                                "quantity": item.quantity,
-                                "price": item.price,
-                                "vat": 5,
-                                "amount": item.quantity * item.price
-                            } for item in order.details
-                        ]
+                        "items": items
                     }
                 }
 
             }
         }
-        print('test test TEST2')
-        print(payload)
-
+        
         auth = (settings.CLOUDPAYMENTS.PUBLIC_ID, settings.CLOUDPAYMENTS.API_SECRET)
 
         async with httpx.AsyncClient() as client:

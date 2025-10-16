@@ -22,6 +22,7 @@ from app.modules.delivery.schemas.get_cities import (
 from app.modules.goods.entities import GoodVariationEntity
 from app.modules.orders.entities import OrderEntity
 from app.modules.orders.schemas.create import CreateOrderSchema
+from app.modules.orders.schemas.order_schema import OrderSchema
 from app.modules.users.entities import UserEntity
 
 
@@ -328,9 +329,9 @@ class CDEKDeliveryMethod(BaseDeliveryMethod):
         # По умолчанию - ожидает оплаты, если статус неизвестен
         return mapping.get(status, DeliveryStatusesEnum.WAITING_FOR_PAYMENT)
 
-    async def get_status(self, order: OrderEntity) -> DeliveryStatusesEnum:
-        if not order.cdek_order_uuid:
-            raise CDEKError("CDEK order UUID is not set for this order")
+    async def get_status(self, order: OrderSchema) -> DeliveryStatusesEnum:
+        if not order.track_number:
+            return DeliveryStatusesEnum.WAITING_FOR_PAYMENT
 
         token = await self.get_cdek_auth_token()
 
@@ -342,7 +343,7 @@ class CDEKDeliveryMethod(BaseDeliveryMethod):
         async with httpx.AsyncClient() as client:
             try:
                 response = await client.get(
-                    f"{base_url}/orders/{order.cdek_order_uuid}",
+                    f"{base_url}/orders/{order.track_number}",
                     headers={
                         "Authorization": f"Bearer {token}",
                         "Accept": "application/json",

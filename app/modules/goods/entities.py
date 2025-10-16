@@ -25,6 +25,8 @@ class GoodEntity(Base):
         back_populates="good", cascade="all", passive_deletes=True
     )
 
+    show_in_catalog: Mapped[bool] = mapped_column(Boolean, nullable=True, default=True)
+
     def __str__(self):
         return self.title
 
@@ -55,7 +57,6 @@ class GoodVariationEntity(Base):
         back_populates="variation",
         cascade="all, delete-orphan",
     )
-
     def __str__(self):
         return self.title
 
@@ -77,7 +78,10 @@ class GoodVariationEntity(Base):
             weight=self.weight,
             length=self.length,
             width=self.width,
-            height=self.height
+            height=self.height,
+            photos=[{
+                "url": photo.url
+            } for photo in self.photos]
         )
 
 
