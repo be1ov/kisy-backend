@@ -60,7 +60,7 @@ class GoodsService:
             stmt = stmt.where(GoodEntity.id == data.id)
 
         if not data.show_hidden:
-            stmt = stmt.where(GoodEntity.is_hidden == False)
+            stmt = stmt.where(GoodEntity.show_in_catalog == True)
 
         result = await self.db.execute(stmt)
         return result.scalars().all()
