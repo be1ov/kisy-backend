@@ -16,6 +16,7 @@ from app.modules.goods.entities import (
 )
 from app.modules.goods.schemas.create import CreateGoodSchema
 from app.modules.goods.schemas.create_variation_schema import CreateVariationSchema
+from app.modules.goods.schemas.get_schemas import GetGoodsSchema
 
 
 class GoodsService:
@@ -44,19 +45,23 @@ class GoodsService:
         result = await self.db.execute(stmt)
         return result.scalars().one_or_none()
 
-    async def get_goods_paginated(
-        self, page: int = 1, size: int = 10
-    ) -> Sequence[GoodEntity]:
+    async def get_goods(self, data: GetGoodsSchema) -> Sequence[GoodEntity]:
         stmt = (
             select(GoodEntity)
-            .offset((page - 1) * size)
-            .limit(size)
+            .offset((data.page - 1) * data.size)
+            .limit(data.size)
             .options(
                 selectinload(GoodEntity.variations).selectinload(
                     GoodVariationEntity.photos
                 )
             )
         )
+        if data.id:
+            stmt = stmt.where(GoodEntity.id == data.id)
+
+        if not data.show_hidden:
+            stmt = stmt.where(GoodEntity.is_hidden == False)
+
         result = await self.db.execute(stmt)
         return result.scalars().all()
 
