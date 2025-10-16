@@ -1,7 +1,7 @@
 import uuid
 from datetime import datetime
 
-from sqlalchemy import String, ForeignKey, Boolean, Float, DateTime, Enum
+from sqlalchemy import Integer, String, ForeignKey, Boolean, Float, DateTime, Enum
 from sqlalchemy.orm import Mapped, mapped_column, relationship
 
 from app.core.db.session import Base
@@ -57,6 +57,9 @@ class GoodVariationEntity(Base):
         back_populates="variation",
         cascade="all, delete-orphan",
     )
+
+    remaining_stock: Mapped[int] = mapped_column(Integer, nullable=True, default=0)
+
     def __str__(self):
         return self.title
 
@@ -79,6 +82,7 @@ class GoodVariationEntity(Base):
             length=self.length,
             width=self.width,
             height=self.height,
+            remaining_stock=self.remaining_stock,
             photos=[{
                 "url": photo.url
             } for photo in self.photos]
