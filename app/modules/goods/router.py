@@ -28,6 +28,17 @@ async def get_by_id(good_id: str, service: GoodsService = Depends()):
     return good
 
 
+@router.put("/update")
+async def update(data: CreateGoodSchema, service: GoodsService = Depends()):
+    try:
+        good = await service.update(data)
+    except ValueError:
+        raise HTTPException(
+            detail="Good with provided id can not be found", status_code=404
+        )
+    return good
+
+
 @router.post("/create")
 async def create(data: CreateGoodSchema, service: GoodsService = Depends()):
     return await service.create(data)
@@ -98,9 +109,7 @@ async def upload_variation_photo(
         raise HTTPException(
             detail="Good variation with provided id can not be found", status_code=404
         )
-    return {
-        "status": "success"
-    }
+    return {"status": "success"}
 
 
 @router.delete("/variation/{variation_id}/delete-photo/{id}")

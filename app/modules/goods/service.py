@@ -35,6 +35,22 @@ class GoodsService:
         )
         result = await self.db.execute(stmt)
         return result.scalars().one_or_none()
+    
+    async def update(self, data: CreateGoodSchema) -> GoodEntity:
+        async with self.db.begin():
+            stmt = select(GoodEntity).where(GoodEntity.id == data.id)
+            result = await self.db.execute(stmt)
+            good = result.scalars().one_or_none()
+            if good is None:
+                raise ValueError("Good not found")
+
+            good.title = data.title
+            good.description = data.description
+            good.show_in_catalog = data.show_in_catalog if data.show_in_catalog is not None else good.show_in_catalog
+
+            self.db.add(good)
+
+        return good
 
     async def get_variation_by_id(self, _id: str) -> GoodVariationEntity:
         stmt = (
