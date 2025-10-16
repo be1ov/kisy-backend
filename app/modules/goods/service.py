@@ -33,7 +33,7 @@ class GoodsService:
             )
         )
         result = await self.db.execute(stmt)
-        return result.scalar()
+        return result.scalars().one_or_none()
 
     async def get_variation_by_id(self, _id: str) -> GoodVariationEntity:
         stmt = (
@@ -150,11 +150,11 @@ class GoodsService:
 
             os.makedirs(f"./static/goods/{variation_id}", exist_ok=True)
 
-            url = f"/static/goods/{variation_id}/{uuid.uuid4()}_{file.filename}"
-            async with aiofiles.open(f".{url}", "wb") as out_file:
+            url = f"static/goods/{variation_id}/{uuid.uuid4()}_{file.filename}"
+            async with aiofiles.open(f"{url}", "wb") as out_file:
                 await out_file.write(file_content)
 
-            photo = GoodVariationPhotoEntity(url=url, is_main=False)
+            photo = GoodVariationPhotoEntity(url=f"api/{url}", is_main=False)
             variation.photos.append(photo)
 
             self.db.add(variation)

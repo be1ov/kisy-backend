@@ -66,7 +66,7 @@ class OrderEntity(Base):
             delivery_method=self.delivery_method,
             created_at=self.created_at.isoformat(),
             status=None,
-            details=[detail.to_schema().model_dump() for detail in self.details],
+            details=[detail.to_schema() for detail in self.details],
             amount=self.amount,
         )
 
@@ -94,7 +94,7 @@ class OrderDetailsEntity(Base):
 
     def to_schema(self) -> OrderDetailsSchema:
         return OrderDetailsSchema(
-            variation=self.variation.__dict__,
+            variation=self.variation.to_schema(),
             quantity=self.quantity,
             price=self.price,
         )
