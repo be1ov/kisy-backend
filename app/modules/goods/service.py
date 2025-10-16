@@ -17,6 +17,7 @@ from app.modules.goods.entities import (
 from app.modules.goods.schemas.create import CreateGoodSchema
 from app.modules.goods.schemas.create_variation_schema import CreateVariationSchema
 from app.modules.goods.schemas.get_schemas import GetGoodsSchema
+from app.modules.goods.schemas.set_remaining_stock_schema import SetRemainingStockSchema
 
 
 class GoodsService:
@@ -35,7 +36,7 @@ class GoodsService:
         )
         result = await self.db.execute(stmt)
         return result.scalars().one_or_none()
-    
+
     async def update(self, data: CreateGoodSchema) -> GoodEntity:
         async with self.db.begin():
             stmt = select(GoodEntity).where(GoodEntity.id == data.id)
@@ -46,7 +47,11 @@ class GoodsService:
 
             good.title = data.title
             good.description = data.description
-            good.show_in_catalog = data.show_in_catalog if data.show_in_catalog is not None else good.show_in_catalog
+            good.show_in_catalog = (
+                data.show_in_catalog
+                if data.show_in_catalog is not None
+                else good.show_in_catalog
+            )
 
             self.db.add(good)
 
@@ -205,5 +210,23 @@ class GoodsService:
                 pass
 
             await self.db.delete(photo)
+
+        return variation
+
+    async def set_remaining_stock(
+        self, data: SetRemainingStockSchema
+    ) -> GoodVariationEntity:
+        async with self.db.begin():
+            stmt = select(GoodVariationEntity).where(
+                GoodVariationEntity.id == data.variation_id
+            )
+            result = await self.db.execute(stmt)
+            variation = result.scalars().one_or_none()
+            if variation is None:
+                raise ValueError("Variation not found")
+
+            variation.remaining_stock = data.remaining_stock
+
+            self.db.add(variation)
 
         return variation

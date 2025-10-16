@@ -4,6 +4,7 @@ from fastapi.params import Query
 from app.modules.goods.schemas.create import CreateGoodSchema
 from app.modules.goods.schemas.create_variation_schema import CreateVariationSchema
 from app.modules.goods.schemas.get_schemas import GetGoodsSchema
+from app.modules.goods.schemas.set_remaining_stock_schema import SetRemainingStockSchema
 from app.modules.goods.service import GoodsService
 
 router = APIRouter()
@@ -43,6 +44,9 @@ async def update(data: CreateGoodSchema, service: GoodsService = Depends()):
 async def create(data: CreateGoodSchema, service: GoodsService = Depends()):
     return await service.create(data)
 
+@router.post("/variations/set-remaining-stock")
+async def set_remaining_stock(data: SetRemainingStockSchema, service: GoodsService = Depends()):
+    return await service.set_remaining_stock(data)
 
 @router.delete("/{good_id}")
 async def delete(good_id: str, service: GoodsService = Depends()):
