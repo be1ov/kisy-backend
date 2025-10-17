@@ -44,9 +44,13 @@ async def update(data: CreateGoodSchema, service: GoodsService = Depends()):
 async def create(data: CreateGoodSchema, service: GoodsService = Depends()):
     return await service.create(data)
 
+
 @router.post("/variations/set-remaining-stock")
-async def set_remaining_stock(data: SetRemainingStockSchema, service: GoodsService = Depends()):
+async def set_remaining_stock(
+    data: SetRemainingStockSchema, service: GoodsService = Depends()
+):
     return await service.set_remaining_stock(data)
+
 
 @router.delete("/{good_id}")
 async def delete(good_id: str, service: GoodsService = Depends()):
