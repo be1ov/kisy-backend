@@ -1,3 +1,4 @@
+import datetime
 import os
 from typing import Sequence
 import uuid
@@ -226,6 +227,7 @@ class GoodsService:
                 raise ValueError("Variation not found")
 
             variation.remaining_stock = data.remaining_stock
+            variation.remaining_stock_date = datetime.datetime.now()
 
             self.db.add(variation)
 

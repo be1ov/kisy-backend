@@ -21,3 +21,4 @@ class GoodVariationSchema(BaseModel):
     photos: tp.List = []
 
     remaining_stock: tp.Optional[int] = Field(None)
+    remaining_stock_date: tp.Optional[datetime] = Field(None)

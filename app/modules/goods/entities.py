@@ -8,6 +8,7 @@ from app.core.db.session import Base
 from app.modules.goods.enums.vat_rates import VATRate
 from app.modules.goods.schemas.good_variation_schema import GoodVariationSchema
 
+
 class GoodEntity(Base):
     __tablename__ = "goods"
 
@@ -59,6 +60,9 @@ class GoodVariationEntity(Base):
     )
 
     remaining_stock: Mapped[int] = mapped_column(Integer, nullable=True, default=0)
+    remaining_stock_date: Mapped[datetime] = mapped_column(
+        DateTime(timezone=True), nullable=True
+    )
 
     def __str__(self):
         return self.title
@@ -83,9 +87,8 @@ class GoodVariationEntity(Base):
             width=self.width,
             height=self.height,
             remaining_stock=self.remaining_stock,
-            photos=[{
-                "url": photo.url
-            } for photo in self.photos]
+            remaining_stock_date=self.remaining_stock_date,
+            photos=[{"url": photo.url} for photo in self.photos],
         )
 
 
