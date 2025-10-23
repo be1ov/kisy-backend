@@ -516,14 +516,11 @@ class CDEKDeliveryMethod(BaseDeliveryMethod):
                 response.raise_for_status()
                 data = response.json()
 
-                print(data)
-
                 if not data or not isinstance(data, list) or len(data) == 0:
                     return None
 
                 pvz = data[0]
                 location = pvz.get("location", {})
-
                 # Формируем координаты если есть
                 coordinates = None
                 if location.get("latitude") and location.get("longitude"):
@@ -534,9 +531,7 @@ class CDEKDeliveryMethod(BaseDeliveryMethod):
 
                 # Формируем режим работы
                 working_hours = None
-                work_time = pvz.get("work_time")
-                if work_time:
-                    working_hours = self._format_working_hours(work_time)
+                working_hours = pvz.get("work_time")
 
                 return DeliveryPoint(
                     code=delivery_point_code,
@@ -588,30 +583,3 @@ class CDEKDeliveryMethod(BaseDeliveryMethod):
             "POSTOMAT_RECEIVED": "Получен из постамата",
         }
         return descriptions.get(status, f"Статус: {status}")
-
-    def _format_working_hours(self, work_time: list) -> tp.Optional[str]:
-        """Форматировать режим работы"""
-        if not work_time:
-            return None
-
-        formatted_hours = []
-        for day_info in work_time:
-            day = day_info.get("day")
-            time_periods = day_info.get("periods", [])
-
-            if not time_periods:
-                continue
-
-            day_names = {1: "Пн", 2: "Вт", 3: "Ср", 4: "Чт", 5: "Пт", 6: "Сб", 7: "Вс"}
-
-            day_name = day_names.get(day, str(day))
-            time_str = ", ".join(
-                [
-                    f"{period.get('time_from', '')}-{period.get('time_to', '')}"
-                    for period in time_periods
-                ]
-            )
-
-            formatted_hours.append(f"{day_name}: {time_str}")
-
-        return "; ".join(formatted_hours) if formatted_hours else None
