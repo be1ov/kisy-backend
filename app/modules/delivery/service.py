@@ -44,10 +44,35 @@ class DeliveryService:
         return await method.get_status(order)
 
     async def fill_order_delivery_info(self, order: OrderSchema) -> OrderSchema:
+        """Заполнить заказ полной информацией о доставке"""
         try:
             method = self.get_delivery_method(DeliveryMethods(order.delivery_method))
             return await method.fill_schema(order)
-        except Exception:
+        except Exception as e:
+            # Если не удалось получить информацию через основной метод,
+            # пытаемся хотя бы получить информацию о ПВЗ
+            try:
+                method = self.get_delivery_method(
+                    DeliveryMethods(order.delivery_method)
+                )
+                delivery_point_info = await method.get_delivery_point_info(
+                    order.delivery_point
+                )
+                if delivery_point_info:
+                    order.delivery_point_info = delivery_point_info
+                    # Создаем базовую информацию о доставке
+                    order.delivery_info = DeliveryInfo(
+                        track_number=order.track_number,
+                        delivery_point_code=order.delivery_point,
+                        delivery_point_address=delivery_point_info.address,
+                        delivery_point_name=delivery_point_info.name,
+                        delivery_point_working_hours=delivery_point_info.working_hours,
+                        delivery_point_phone=delivery_point_info.phone,
+                        estimated_delivery_date=None,
+                    )
+            except Exception:
+                pass  # Не удалось получить даже информацию о ПВЗ
+
             return order
 
     async def get_delivery_info(self, order: OrderSchema) -> tp.Optional[DeliveryInfo]:

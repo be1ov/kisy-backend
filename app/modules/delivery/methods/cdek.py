@@ -366,33 +366,91 @@ class CDEKDeliveryMethod(BaseDeliveryMethod):
                 raise CDEKError(f"Ошибка получения статуса заказа в СДЕК: {str(e)}")
 
     async def fill_schema(self, schema: OrderSchema) -> OrderSchema:
+        """Заполняет схему заказа полной информацией о доставке CDEK"""
         try:
-            delivery_info = await self.get_delivery_info(schema)
-            tracking_info = await self.get_tracking_info(schema)
+            # Всегда пытаемся получить информацию о пункте выдачи (код ПВЗ есть всегда)
             delivery_point_info = await self.get_delivery_point_info(
                 schema.delivery_point
             )
-
-            # Обновляем схему
-            schema.delivery_info = delivery_info
-            schema.tracking_info = tracking_info
             schema.delivery_point_info = delivery_point_info
+
+            # Получаем информацию о доставке и отслеживании только если есть трек-номер
+            if schema.track_number:
+                delivery_info = await self.get_delivery_info(schema)
+                tracking_info = await self.get_tracking_info(schema)
+                schema.delivery_info = delivery_info
+                schema.tracking_info = tracking_info
+            else:
+                # Если нет трек-номера, создаем базовую информацию о доставке с ПВЗ
+                schema.delivery_info = DeliveryInfo(
+                    track_number=None,
+                    delivery_point_code=schema.delivery_point,
+                    delivery_point_address=(
+                        delivery_point_info.address if delivery_point_info else None
+                    ),
+                    delivery_point_name=(
+                        delivery_point_info.name if delivery_point_info else None
+                    ),
+                    delivery_point_working_hours=(
+                        delivery_point_info.working_hours
+                        if delivery_point_info
+                        else None
+                    ),
+                    delivery_point_phone=(
+                        delivery_point_info.phone if delivery_point_info else None
+                    ),
+                    estimated_delivery_date=None,
+                )
+                schema.tracking_info = None
 
             return schema
         except CDEKError:
-            # Если не удалось получить информацию, возвращаем схему как есть
+            # При ошибке все равно пытаемся получить хотя бы информацию о ПВЗ
+            try:
+                delivery_point_info = await self.get_delivery_point_info(
+                    schema.delivery_point
+                )
+                schema.delivery_point_info = delivery_point_info
+
+                # Создаем минимальную информацию о доставке
+                schema.delivery_info = DeliveryInfo(
+                    track_number=schema.track_number,
+                    delivery_point_code=schema.delivery_point,
+                    delivery_point_address=(
+                        delivery_point_info.address if delivery_point_info else None
+                    ),
+                    delivery_point_name=(
+                        delivery_point_info.name if delivery_point_info else None
+                    ),
+                    delivery_point_working_hours=(
+                        delivery_point_info.working_hours
+                        if delivery_point_info
+                        else None
+                    ),
+                    delivery_point_phone=(
+                        delivery_point_info.phone if delivery_point_info else None
+                    ),
+                    estimated_delivery_date=None,
+                )
+            except CDEKError:
+                pass
+
             return schema
 
     async def get_delivery_info(self, order: OrderSchema) -> tp.Optional[DeliveryInfo]:
-        if not order.track_number:
-            return None
-
+        """Получить базовую информацию о доставке"""
         try:
-            # Получаем детальную информацию о пункте
+            # Получаем детальную информацию о пункте (код ПВЗ есть всегда)
             delivery_point = await self.get_delivery_point_info(order.delivery_point)
 
-            # Получаем информацию о заказе из CDEK API
-            order_data = await self._get_cdek_order_data(order.track_number)
+            # Если есть трек-номер, пытаемся получить информацию о заказе из CDEK API
+            order_data = {}
+            if order.track_number:
+                try:
+                    order_data = await self._get_cdek_order_data(order.track_number)
+                except CDEKError:
+                    # Если не удалось получить данные заказа, продолжаем без них
+                    pass
 
             return DeliveryInfo(
                 track_number=order.track_number,
