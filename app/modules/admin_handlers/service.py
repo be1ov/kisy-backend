@@ -66,18 +66,21 @@ class SendingMessages:
             media = URLInputFile(data.photo)
 
         for chat_id in user_chat_ids:
-            (
-                await bot.send_photo(
-                    chat_id=chat_id,
-                    photo=media,
-                    caption=data.message,
-                    parse_mode="HTML",
+            try:
+                (
+                    await bot.send_photo(
+                        chat_id=chat_id,
+                        photo=media,
+                        caption=data.message,
+                        parse_mode="HTML",
+                    )
+                    if media
+                    else await bot.send_message(
+                        chat_id=chat_id, text=data.message, parse_mode="HTML"
+                    )
                 )
-                if media
-                else await bot.send_message(
-                    chat_id=chat_id, text=data.message, parse_mode="HTML"
-                )
-            )
+            except Exception as e:
+                print(f"Failed to send message to {chat_id}: {e}")
 
 
 class ExcelService:
