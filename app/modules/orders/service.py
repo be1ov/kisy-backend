@@ -124,7 +124,9 @@ class OrderService:
         status = await self.delivery_service.get_order_status(order)
         return status if status else None
 
-    async def get_orders_by_user(self, user: UserEntity) -> tp.List[OrderSchema]:
+    async def get_orders_by_user(
+        self, user: UserEntity, include_delivery_info: bool = True
+    ) -> tp.List[OrderSchema]:
         stmt = (
             select(OrderEntity)
             .options(
@@ -142,8 +144,15 @@ class OrderService:
 
         schemas = [o.to_schema() for o in orders]
         for order_schema in schemas:
+            # Получаем статус доставки
             order_schema.status = await self.delivery_service.get_order_status(
                 order_schema
             )
+
+            # Если запрошена расширенная информация о доставке, заполняем её
+            if include_delivery_info:
+                order_schema = await self.delivery_service.fill_order_delivery_info(
+                    order_schema
+                )
 
         return schemas
