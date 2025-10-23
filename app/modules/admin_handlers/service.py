@@ -14,6 +14,8 @@ from starlette.datastructures import UploadFile
 
 from app.core.config import settings
 from app.core.db.session import get_session
+from app.modules.admin_handlers.enums.RecipientsEnum import RecipientsEnum
+from app.modules.admin_handlers.schemas.api.BroadcastingSchema import BroadcastingSchema
 from app.modules.goods.entities import GoodEntity, GoodVariationEntity
 from app.modules.orders.entities import OrderEntity, OrderDetailsEntity
 from app.modules.payments.entities import PaymentEntity
@@ -25,63 +27,57 @@ from aiogram.types import URLInputFile
 
 bot = Bot(token=settings.BOT_TOKEN)
 
+
 class InvalidUsers(ValueError):
     pass
+
 
 class SendingMessages:
     def __init__(self, db: AsyncSession = Depends(get_session)):
         self.db = db
 
-    async def send_message(self, photo: str, message: str):
+    async def send_message(
+        self,
+        data: BroadcastingSchema,
+    ):
+        """
+        Отправка сообщений пользователям
 
-        result = await self.db.execute(select(UserEntity).where(UserEntity.phone == '+79233456966'))
-        users = result.scalars().all()
-        if not users:
-            return InvalidUsers("No users with telegram_id found")
+        Args:
+            data: BroadcastingSchema - данные для рассылки
+        """
 
-        success_count = 0
-        failed_users = []
-
-        for user in users:
-            try:
-                if photo:
-                    await bot.send_photo(
-                        chat_id=user.telegram_id,
-                        photo=URLInputFile(photo),
-                        caption=message
-                    )
-                else:
-                    await bot.send_message(
-                        chat_id=user.telegram_id,
-                        text=message
-                    )
-                success_count += 1
-            except Exception as e:
-                failed_users.append(user.telegram_id)
-
-        return {
-            "status": "completed",
-            "total_users": len(users),
-            "success_count": success_count,
-            "failed_count": len(failed_users),
-            "failed_users": failed_users
-        }
-
-    async def save_uploaded_file(self, file: UploadFile) -> str:
-
-        if file.filename:
-
-            os.makedirs("media/uploads", exist_ok=True)
-
-            file_name = f"uploaded_{file.filename}"
-            file_path = f"media/uploads/{file_name}"
-
-            with open(file_path, "wb") as buffer:
-                buffer.write(await file.read())
-
-            return f"https://kisy-cosmetic.ru/media/uploads/{file_name}"
+        if RecipientsEnum.ALL in data.recipients:
+            stmt = select(UserEntity.telegram_id).where(
+                UserEntity.telegram_id.is_not(None)
+            )
+        elif RecipientsEnum.ADMINS in data.recipients:
+            stmt = select(UserEntity.telegram_id).where(
+                UserEntity.is_admin == True, UserEntity.telegram_id.is_not(None)
+            )
         else:
-            return ""
+            raise InvalidUsers("No valid recipients specified")
+
+        result = await self.db.execute(stmt)
+        user_chat_ids = [row[0] for row in result.all()]
+
+        media = None
+        if data.photo:
+            media = URLInputFile(data.photo)
+
+        for chat_id in user_chat_ids:
+            (
+                await bot.send_photo(
+                    chat_id=chat_id,
+                    photo=media,
+                    caption=data.message,
+                    parse_mode="HTML",
+                )
+                if media
+                else await bot.send_message(
+                    chat_id=chat_id, text=data.message, parse_mode="HTML"
+                )
+            )
 
 
 class ExcelService:
@@ -114,7 +110,9 @@ class ExcelService:
                 GoodVariationEntity.title.label("variation_title"),
                 OrderDetailsEntity.price,
                 OrderDetailsEntity.quantity,
-                (OrderDetailsEntity.price * OrderDetailsEntity.quantity).label("amount")
+                (OrderDetailsEntity.price * OrderDetailsEntity.quantity).label(
+                    "amount"
+                ),
             )
             .join(OrderEntity.user)
             .join(OrderEntity.details)
@@ -135,9 +133,18 @@ class ExcelService:
         ws.title = "Заказы"
 
         headers = [
-            "ID заказа", "Имя", "Фамилия", "Телефон", "Email",
-            "ID товара", "Наименование товара", "ID вариации", "Наименование вариации",
-            "Цена", "Количество", "Сумма"
+            "ID заказа",
+            "Имя",
+            "Фамилия",
+            "Телефон",
+            "Email",
+            "ID товара",
+            "Наименование товара",
+            "ID вариации",
+            "Наименование вариации",
+            "Цена",
+            "Количество",
+            "Сумма",
         ]
 
         ws.append(headers)
@@ -146,20 +153,22 @@ class ExcelService:
             cell.font = Font(bold=True)
 
         for order in orders_data:
-            ws.append([
-                order.id,
-                order.first_name,
-                order.last_name,
-                order.phone,
-                order.email,
-                order.good_id,
-                order.good_name,
-                order.variation_id,
-                order.variation_title,
-                order.price,
-                order.quantity,
-                order.amount
-            ])
+            ws.append(
+                [
+                    order.id,
+                    order.first_name,
+                    order.last_name,
+                    order.phone,
+                    order.email,
+                    order.good_id,
+                    order.good_name,
+                    order.variation_id,
+                    order.variation_title,
+                    order.price,
+                    order.quantity,
+                    order.amount,
+                ]
+            )
 
         total_amount = sum(order.amount for order in orders_data)
         ws.append(["ИТОГО:", "", "", "", "", "", "", "", "", "", "", total_amount])

@@ -13,6 +13,7 @@ from fastapi import (
 )
 from fastapi.responses import StreamingResponse, JSONResponse
 
+from app.modules.admin_handlers.schemas.api.BroadcastingSchema import BroadcastingSchema
 from app.modules.admin_handlers.service import ExcelService, SendingMessages
 
 router = APIRouter()
@@ -60,16 +61,11 @@ async def get_excel_orders(
 
 @router.post("/send_messages", response_model=None)
 async def send_messages(
-    photo: UploadFile = File(...),
-    caption: str = Form(...),
+    data: BroadcastingSchema,
     service: SendingMessages = Depends(),
 ):
     try:
-
-        file_url = await service.save_uploaded_file(photo)
-
-        await service.send_message(file_url, caption)
+        await service.send_message(data)
         return JSONResponse(status_code=200, content={"status": "success"})
-
     except Exception as e:
         raise HTTPException(status_code=500, detail=str(e))
