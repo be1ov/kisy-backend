@@ -41,7 +41,7 @@ async def get_order(
         order = await service.get_by_id(id)
         if order.user_id != current_user.id:
             raise HTTPException(
-                status_code=403, detail="Only author of the order can view its details"
+                status_code=403, detail="Only author of the order can view its details."
             )
 
         order_schema = order.to_schema()
