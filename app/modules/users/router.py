@@ -70,6 +70,25 @@ async def get_user_by_id(user_id: str, service: UserService = Depends()):
         raise HTTPException(status_code=500, detail=str(e))
 
 
+@router.put("/{user_id}")
+async def update_user_by_id(
+    user_id: str, data: UserUpdateSchema, service: UserService = Depends()
+):
+    """Обновление пользователя по ID"""
+    try:
+        user = await service.get_by_id(user_id)
+        if not user:
+            raise HTTPException(status_code=404, detail="Пользователь не найден")
+
+        updated_user = await service.update_user_by_id(user_id, data)
+        if not updated_user:
+            raise HTTPException(status_code=404, detail="Пользователь не найден")
+
+        return {"status": "success", "data": updated_user.to_schema()}
+    except Exception as e:
+        raise HTTPException(status_code=500, detail=str(e))
+
+
 @router.post("/update")
 async def create_user(
     data: UserUpdateSchema,
