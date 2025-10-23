@@ -516,6 +516,8 @@ class CDEKDeliveryMethod(BaseDeliveryMethod):
                 response.raise_for_status()
                 data = response.json()
 
+                print(data)
+
                 if not data or not isinstance(data, list) or len(data) == 0:
                     return None
 
