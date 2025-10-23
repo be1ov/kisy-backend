@@ -11,3 +11,4 @@ class UserSchema(BaseModel):
     birth_date: datetime | None = None
     telegram_id: int
     signup_completed: bool
+    is_admin: bool = False

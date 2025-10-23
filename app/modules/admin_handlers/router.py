@@ -59,7 +59,7 @@ async def get_excel_orders(
         raise HTTPException(status_code=500, detail=str(e))
 
 
-@router.post("/send_messages", response_model=None)
+@router.post("/broadcast", response_model=None)
 async def send_messages(
     data: BroadcastingSchema,
     service: SendingMessages = Depends(),

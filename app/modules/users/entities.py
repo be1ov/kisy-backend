@@ -45,4 +45,5 @@ class UserEntity(Base):
             telegram_id=self.telegram_id,
             birth_date=self.birth_date,
             signup_completed=self.signup_completed,
+            is_admin=self.is_admin,
         )
