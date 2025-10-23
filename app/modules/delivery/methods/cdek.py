@@ -12,6 +12,11 @@ from app.modules.delivery.schemas.create_order import (
     CdekPackage,
     CdekRecipient,
 )
+from app.modules.delivery.schemas.delivery_info import (
+    DeliveryInfo,
+    TrackingInfo,
+    DeliveryPoint,
+)
 from app.modules.delivery.schemas.get_cities import (
     ListResponse,
     DeliveryPointFilter,
@@ -359,3 +364,194 @@ class CDEKDeliveryMethod(BaseDeliveryMethod):
                 return await self.map_delivery_status(status)
             except (httpx.HTTPStatusError, KeyError) as e:
                 raise CDEKError(f"Ошибка получения статуса заказа в СДЕК: {str(e)}")
+
+    async def fill_schema(self, schema: OrderSchema) -> OrderSchema:
+        try:
+            delivery_info = await self.get_delivery_info(schema)
+            tracking_info = await self.get_tracking_info(schema)
+            delivery_point_info = await self.get_delivery_point_info(
+                schema.delivery_point
+            )
+
+            # Обновляем схему
+            schema.delivery_info = delivery_info
+            schema.tracking_info = tracking_info
+            schema.delivery_point_info = delivery_point_info
+
+            return schema
+        except CDEKError:
+            # Если не удалось получить информацию, возвращаем схему как есть
+            return schema
+
+    async def get_delivery_info(self, order: OrderSchema) -> tp.Optional[DeliveryInfo]:
+        if not order.track_number:
+            return None
+
+        try:
+            # Получаем детальную информацию о пункте
+            delivery_point = await self.get_delivery_point_info(order.delivery_point)
+
+            # Получаем информацию о заказе из CDEK API
+            order_data = await self._get_cdek_order_data(order.track_number)
+
+            return DeliveryInfo(
+                track_number=order.track_number,
+                delivery_point_code=order.delivery_point,
+                delivery_point_address=(
+                    delivery_point.address if delivery_point else None
+                ),
+                delivery_point_name=delivery_point.name if delivery_point else None,
+                delivery_point_working_hours=(
+                    delivery_point.working_hours if delivery_point else None
+                ),
+                delivery_point_phone=delivery_point.phone if delivery_point else None,
+                estimated_delivery_date=order_data.get("estimated_delivery_date"),
+            )
+        except CDEKError:
+            return None
+
+    async def get_tracking_info(self, order: OrderSchema) -> tp.Optional[TrackingInfo]:
+        if not order.track_number:
+            return None
+
+        try:
+            order_data = await self._get_cdek_order_data(order.track_number)
+
+            # Формируем URL для отслеживания
+            track_url = f"https://www.cdek.ru/track.html?order_id={order.track_number}"
+
+            # Получаем читаемое описание статуса
+            status = order_data.get("state", "")
+            status_description = self._get_status_description(status)
+
+            return TrackingInfo(
+                track_number=order.track_number,
+                track_url=track_url,
+                delivery_service="CDEK",
+                current_status=status,
+                status_description=status_description,
+                last_updated=order_data.get("date_updated"),
+            )
+        except CDEKError:
+            return None
+
+    async def get_delivery_point_info(
+        self, delivery_point_code: str
+    ) -> tp.Optional[DeliveryPoint]:
+        try:
+            token = await self.get_cdek_auth_token()
+
+            if settings.CDEK_DEBUG:
+                base_url = settings.CDEK_TEST_API_URL
+            else:
+                base_url = settings.CDEK_API_URL
+
+            async with httpx.AsyncClient() as client:
+                response = await client.get(
+                    f"{base_url}/deliverypoints",
+                    params={"code": delivery_point_code},
+                    headers={
+                        "Authorization": f"Bearer {token}",
+                        "Accept": "application/json",
+                    },
+                )
+                response.raise_for_status()
+                data = response.json()
+
+                if not data or not isinstance(data, list) or len(data) == 0:
+                    return None
+
+                pvz = data[0]
+                location = pvz.get("location", {})
+
+                # Формируем координаты если есть
+                coordinates = None
+                if location.get("latitude") and location.get("longitude"):
+                    coordinates = {
+                        "latitude": location.get("latitude"),
+                        "longitude": location.get("longitude"),
+                    }
+
+                # Формируем режим работы
+                working_hours = None
+                work_time = pvz.get("work_time")
+                if work_time:
+                    working_hours = self._format_working_hours(work_time)
+
+                return DeliveryPoint(
+                    code=delivery_point_code,
+                    name=pvz.get("name", ""),
+                    address=location.get("address_full", ""),
+                    city=location.get("city", ""),
+                    working_hours=working_hours,
+                    phone=pvz.get("phone"),
+                    coordinates=coordinates,
+                    additional_info=pvz.get("note"),
+                )
+        except (httpx.HTTPStatusError, KeyError) as e:
+            raise CDEKError(f"Ошибка получения информации о ПВЗ СДЕК: {str(e)}")
+
+    async def _get_cdek_order_data(self, track_number: str) -> dict:
+        """Получить данные заказа из CDEK API"""
+        token = await self.get_cdek_auth_token()
+
+        if settings.CDEK_DEBUG:
+            base_url = settings.CDEK_TEST_API_URL
+        else:
+            base_url = settings.CDEK_API_URL
+
+        async with httpx.AsyncClient() as client:
+            response = await client.get(
+                f"{base_url}/orders/{track_number}",
+                headers={
+                    "Authorization": f"Bearer {token}",
+                    "Accept": "application/json",
+                },
+            )
+            response.raise_for_status()
+            return response.json()
+
+    def _get_status_description(self, status: str) -> str:
+        """Получить человекочитаемое описание статуса"""
+        descriptions = {
+            "ACCEPTED": "Заказ принят",
+            "CREATED": "Заказ создан",
+            "RECEIVED_AT_SHIPMENT_WAREHOUSE": "Принят на склад отправителя",
+            "READY_TO_SHIP_AT_SENDING_OFFICE": "Готов к отправке",
+            "SENT_TO_RECIPIENT_CITY": "Отправлен в город получателя",
+            "ACCEPTED_IN_RECIPIENT_CITY": "Прибыл в город получателя",
+            "ACCEPTED_AT_PICK_UP_POINT": "Прибыл в пункт выдачи",
+            "DELIVERED": "Доставлен",
+            "NOT_DELIVERED": "Не доставлен",
+            "TAKEN_BY_COURIER": "Передан курьеру",
+            "POSTOMAT_POSTED": "Заложен в постамат",
+            "POSTOMAT_RECEIVED": "Получен из постамата",
+        }
+        return descriptions.get(status, f"Статус: {status}")
+
+    def _format_working_hours(self, work_time: list) -> tp.Optional[str]:
+        """Форматировать режим работы"""
+        if not work_time:
+            return None
+
+        formatted_hours = []
+        for day_info in work_time:
+            day = day_info.get("day")
+            time_periods = day_info.get("periods", [])
+
+            if not time_periods:
+                continue
+
+            day_names = {1: "Пн", 2: "Вт", 3: "Ср", 4: "Чт", 5: "Пт", 6: "Сб", 7: "Вс"}
+
+            day_name = day_names.get(day, str(day))
+            time_str = ", ".join(
+                [
+                    f"{period.get('time_from', '')}-{period.get('time_to', '')}"
+                    for period in time_periods
+                ]
+            )
+
+            formatted_hours.append(f"{day_name}: {time_str}")
+
+        return "; ".join(formatted_hours) if formatted_hours else None

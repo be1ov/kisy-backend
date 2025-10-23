@@ -58,8 +58,8 @@ class OrderEntity(Base):
 
     payments: Mapped[List["PaymentEntity"]] = relationship(back_populates="order")
 
-    def to_schema(self) -> OrderSchema:
-        return OrderSchema(
+    def to_schema(self, fill_delivery_info: bool = False) -> OrderSchema:
+        schema = OrderSchema(
             id=self.id,
             user_id=self.user_id,
             currency=self.currency,
@@ -69,8 +69,12 @@ class OrderEntity(Base):
             status=None,
             details=[detail.to_schema() for detail in self.details],
             amount=self.amount,
-            track_number=self.cdek_order_uuid
+            track_number=self.cdek_order_uuid,
+            delivery_info=None,
+            tracking_info=None,
+            delivery_point_info=None,
         )
+        return schema
 
 
 class OrderDetailsEntity(Base):
