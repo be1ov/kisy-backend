@@ -35,7 +35,7 @@ async def get_order(
     current_user: UserEntity = Depends(get_current_user),
     service: OrderService = Depends(),
     delivery_service: DeliveryService = Depends(),
-    include_delivery_info: bool = False,
+    include_delivery_info: bool = True,
 ):
     try:
         order = await service.get_by_id(id)
