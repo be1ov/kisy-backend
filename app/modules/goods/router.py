@@ -5,6 +5,7 @@ from app.modules.goods.schemas.create import CreateGoodSchema
 from app.modules.goods.schemas.create_variation_schema import CreateVariationSchema
 from app.modules.goods.schemas.get_schemas import GetGoodsSchema
 from app.modules.goods.schemas.set_remaining_stock_schema import SetRemainingStockSchema
+from app.modules.goods.schemas.upload_photo_schema import UploadPhotoSchema
 from app.modules.goods.service import GoodsService
 
 router = APIRouter()
@@ -106,10 +107,10 @@ async def update_variation(
 
 @router.post("/variation/{variation_id}/upload-photo")
 async def upload_variation_photo(
-    variation_id: str, url: str = Body(...), service: GoodsService = Depends()
+    variation_id: str, data: UploadPhotoSchema, service: GoodsService = Depends()
 ):
     try:
-        await service.upload_photos(variation_id, url)
+        await service.upload_photos(variation_id, data.url)
     except ValueError:
         raise HTTPException(
             detail="Good variation with provided id can not be found", status_code=404
