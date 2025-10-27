@@ -157,7 +157,7 @@ class GoodsService:
         return variation
 
     async def upload_photos(
-        self, variation_id: str, file: UploadFile
+        self, variation_id: str, url: str
     ) -> GoodVariationEntity:
         async with self.db.begin():
             stmt = (
@@ -170,18 +170,7 @@ class GoodsService:
             if variation is None:
                 raise ValueError("Variation not found")
 
-            file_content = await file.read()
-            content_type = file.content_type
-            if not content_type or content_type not in ["image/jpeg", "image/png"]:
-                raise ValueError("File must be an image")
-
-            os.makedirs(f"./static/goods/{variation_id}", exist_ok=True)
-
-            url = f"static/goods/{variation_id}/{uuid.uuid4()}_{file.filename}"
-            async with aiofiles.open(f"{url}", "wb") as out_file:
-                await out_file.write(file_content)
-
-            photo = GoodVariationPhotoEntity(url=f"api/{url}", is_main=False)
+            photo = GoodVariationPhotoEntity(url=f"{url}", is_main=False)
             variation.photos.append(photo)
 
             self.db.add(variation)
