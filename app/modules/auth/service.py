@@ -30,11 +30,11 @@ class AuthService:
 
     @staticmethod
     def hash_password(password: str) -> str:
-        return bcrypt.hashpw(password.encode('utf-8'), bcrypt.gensalt()).decode('utf-8')
+        return bcrypt.hashpw(password.encode("utf-8"), bcrypt.gensalt()).decode("utf-8")
 
     @staticmethod
     def verify_password(password: str, hashed_password: str) -> bool:
-        return bcrypt.checkpw(password.encode('utf-8'), hashed_password.encode('utf-8'))
+        return bcrypt.checkpw(password.encode("utf-8"), hashed_password.encode("utf-8"))
 
     async def signup(self, data: SignupSchema) -> UserEntity:
         user = UserEntity(**data.model_dump())
@@ -48,14 +48,14 @@ class AuthService:
 
     @staticmethod
     def validate_init_data_hash(parsed: dict, _hash: str):
-        data_check_string = "\n".join(
-            f"{k}={v}" for k, v in sorted(parsed.items())
-        )
+        data_check_string = "\n".join(f"{k}={v}" for k, v in sorted(parsed.items()))
 
         secret_key = hmac.new(
             key=b"WebAppData", msg=settings.BOT_TOKEN.encode(), digestmod=hashlib.sha256
         )
-        hmac_hash = hmac.new(secret_key.digest(), data_check_string.encode(), hashlib.sha256).hexdigest()
+        hmac_hash = hmac.new(
+            secret_key.digest(), data_check_string.encode(), hashlib.sha256
+        ).hexdigest()
 
         if hmac_hash != _hash:
             return False
@@ -86,22 +86,26 @@ class AuthService:
         if not user:
             user = await self.users_service.create_user(telegram_id)
 
-        user.first_name = user_data.get("firstName", "")
-        user.last_name = user_data.get("lastName", "")
         user.username = user_data.get("username", "")
         return await self.users_service.save(user)
-        
+
     @staticmethod
     def generate_access_token(user: UserEntity) -> str:
-        expire = datetime.now(timezone.utc) + timedelta(minutes=settings.ACCESS_TOKEN_EXPIRE_MINUTES)
+        expire = datetime.now(timezone.utc) + timedelta(
+            minutes=settings.ACCESS_TOKEN_EXPIRE_MINUTES
+        )
         payload = AccessTokenSchema(user_id=user.id, exp=expire)
         return jwt.encode(payload.model_dump(), settings.SECRET_KEY, algorithm="HS256")
 
     @staticmethod
     def generate_refresh_token(user: UserEntity) -> str:
-        expire = datetime.now(timezone.utc) + timedelta(days=settings.REFRESH_TOKEN_EXPIRE_DAYS)
+        expire = datetime.now(timezone.utc) + timedelta(
+            days=settings.REFRESH_TOKEN_EXPIRE_DAYS
+        )
         payload = RefreshTokenSchema(user_id=user.id, exp=expire)
-        return jwt.encode(payload.model_dump(), settings.REFRESH_SECRET_KEY, algorithm="HS256")
+        return jwt.encode(
+            payload.model_dump(), settings.REFRESH_SECRET_KEY, algorithm="HS256"
+        )
 
     @staticmethod
     def verify_access_token(token: str) -> AccessTokenSchema | None:
@@ -114,7 +118,9 @@ class AuthService:
     @staticmethod
     def verify_refresh_token(token: str) -> RefreshTokenSchema | None:
         try:
-            payload = jwt.decode(token, settings.REFRESH_SECRET_KEY, algorithms=["HS256"])
+            payload = jwt.decode(
+                token, settings.REFRESH_SECRET_KEY, algorithms=["HS256"]
+            )
             return RefreshTokenSchema(**payload)
         except Exception:
             return None
